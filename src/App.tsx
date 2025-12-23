@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
+import InstallPWA from "./components/InstallPWA";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <InstallPWA />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
