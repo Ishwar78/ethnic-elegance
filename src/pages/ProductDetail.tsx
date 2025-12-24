@@ -8,6 +8,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/contexts/CartContext";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
@@ -50,6 +51,7 @@ const productData = {
 
 export default function ProductDetail() {
   const { id } = useParams();
+  const { addToCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -59,6 +61,25 @@ export default function ProductDetail() {
   const product = productData; // In real app, fetch based on id
 
   const averageRating = product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length;
+
+  const handleAddToCart = () => {
+    addToCart(
+      {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        image: product.images[0],
+        size: selectedSize || undefined,
+        category: product.category,
+      },
+      quantity
+    );
+  };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+  };
 
   return (
     <>
@@ -258,10 +279,10 @@ export default function ProductDetail() {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button variant="gold" size="xl" className="flex-1">
+                  <Button variant="gold" size="xl" className="flex-1" onClick={handleAddToCart}>
                     Add to Cart
                   </Button>
-                  <Button variant="hero" size="xl" className="flex-1">
+                  <Button variant="hero" size="xl" className="flex-1" onClick={handleBuyNow}>
                     Buy It Now
                   </Button>
                   <Button

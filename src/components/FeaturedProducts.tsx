@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Heart, Eye, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/contexts/CartContext";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
@@ -108,7 +109,19 @@ interface ProductCardProps {
 function ProductCard({ product, index }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const { addToCart } = useCart();
 
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.image,
+      category: product.category,
+    });
+  };
   return (
     <div
       className="group animate-fade-in-up"
@@ -174,7 +187,7 @@ function ProductCard({ product, index }: ProductCardProps) {
             "absolute bottom-0 left-0 right-0 p-3 transition-all duration-300",
             isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           )}>
-            <Button variant="gold" className="w-full gap-2">
+            <Button variant="gold" className="w-full gap-2" onClick={handleAddToCart}>
               <ShoppingBag className="h-4 w-4" />
               Add to Cart
             </Button>
