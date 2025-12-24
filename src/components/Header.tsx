@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Search, Heart, ShoppingBag, Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/contexts/CartContext";
 
 const menuItems = [
   { name: "Home", href: "/" },
@@ -18,6 +19,7 @@ const menuItems = [
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { totalItems, setIsCartOpen } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,11 +84,13 @@ export default function Header() {
               <Button variant="ghost" size="icon" className="hidden sm:flex">
                 <Heart className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative" onClick={() => setIsCartOpen(true)}>
                 <ShoppingBag className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold text-charcoal text-xs font-bold flex items-center justify-center">
-                  3
-                </span>
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gold text-charcoal text-xs font-bold flex items-center justify-center">
+                    {totalItems > 99 ? "99+" : totalItems}
+                  </span>
+                )}
               </Button>
 
               {/* Mobile Menu Toggle */}
