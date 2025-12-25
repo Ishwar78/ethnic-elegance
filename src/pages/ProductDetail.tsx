@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Heart, Share2, Truck, Shield, RotateCcw, Minus, Plus, ChevronRight, Star } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import ReviewForm, { Review } from "@/components/ReviewForm";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
+import { getStoredReviews, saveReview } from "@/lib/reviews";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
@@ -22,6 +24,7 @@ const productData = {
   discount: 29,
   images: [product1, product5, product2, product3],
   category: "Ethnic Wear",
+  subcategory: "Kurta Sets",
   sizes: ["M", "L", "XL", "XXL", "XXXL"],
   stock: 5,
   description: `
@@ -42,10 +45,10 @@ const productData = {
     "Round Neck Design",
     "Matching Dupatta Included",
   ],
-  reviews: [
-    { id: 1, name: "Priya S.", rating: 5, comment: "Absolutely stunning! The embroidery is even more beautiful in person.", date: "2 days ago" },
-    { id: 2, name: "Anita M.", rating: 4, comment: "Great quality and fits perfectly. Delivery was fast too!", date: "1 week ago" },
-    { id: 3, name: "Kavita R.", rating: 5, comment: "Wore this for Diwali and received so many compliments!", date: "2 weeks ago" },
+  defaultReviews: [
+    { id: "default-1", name: "Priya S.", rating: 5, comment: "Absolutely stunning! The embroidery is even more beautiful in person.", date: "2 days ago", productId: 1 },
+    { id: "default-2", name: "Anita M.", rating: 4, comment: "Great quality and fits perfectly. Delivery was fast too!", date: "1 week ago", productId: 1 },
+    { id: "default-3", name: "Kavita R.", rating: 5, comment: "Wore this for Diwali and received so many compliments!", date: "2 weeks ago", productId: 1 },
   ],
 };
 
@@ -57,10 +60,28 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   const product = productData; // In real app, fetch based on id
+  const productId = Number(id) || product.id;
 
-  const averageRating = product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length;
+  // Load reviews on mount
+  useEffect(() => {
+    const storedReviews = getStoredReviews(productId);
+    const allReviews = [...storedReviews, ...product.defaultReviews.filter(
+      (dr) => !storedReviews.some((sr) => sr.id === dr.id)
+    )];
+    setReviews(allReviews);
+  }, [productId]);
+
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length 
+    : 0;
+
+  const handleReviewSubmitted = (newReview: Review) => {
+    saveReview(newReview);
+    setReviews((prev) => [newReview, ...prev]);
+  };
 
   const handleAddToCart = () => {
     addToCart(
@@ -80,6 +101,15 @@ export default function ProductDetail() {
   const handleBuyNow = () => {
     handleAddToCart();
   };
+
+  // Rating distribution
+  const ratingDistribution = [5, 4, 3, 2, 1].map((star) => ({
+    star,
+    count: reviews.filter((r) => r.rating === star).length,
+    percentage: reviews.length > 0 
+      ? (reviews.filter((r) => r.rating === star).length / reviews.length) * 100 
+      : 0,
+  }));
 
   return (
     <>
@@ -102,7 +132,7 @@ export default function ProductDetail() {
             "aggregateRating": {
               "@type": "AggregateRating",
               "ratingValue": averageRating.toFixed(1),
-              "reviewCount": product.reviews.length
+              "reviewCount": reviews.length
             }
           })}
         </script>
@@ -117,7 +147,7 @@ export default function ProductDetail() {
             <nav className="flex items-center gap-2 text-sm text-muted-foreground">
               <Link to="/" className="hover:text-primary">Home</Link>
               <ChevronRight className="h-4 w-4" />
-              <Link to="/shop" className="hover:text-primary">Shop</Link>
+              <Link to="/ethnic-wear" className="hover:text-primary">{product.category}</Link>
               <ChevronRight className="h-4 w-4" />
               <span className="text-foreground">{product.name}</span>
             </nav>
@@ -185,15 +215,16 @@ export default function ProductDetail() {
                           key={star}
                           className={cn(
                             "h-5 w-5",
-                            star <= averageRating
+                            star <= Math.round(averageRating)
                               ? "text-gold fill-gold"
                               : "text-muted-foreground"
                           )}
                         />
                       ))}
                     </div>
+                    <span className="font-medium">{averageRating.toFixed(1)}</span>
                     <span className="text-muted-foreground text-sm">
-                      ({product.reviews.length} reviews)
+                      ({reviews.length} reviews)
                     </span>
                   </div>
                 </div>
@@ -339,7 +370,7 @@ export default function ProductDetail() {
                   value="reviews"
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-4"
                 >
-                  Reviews ({product.reviews.length})
+                  Reviews ({reviews.length})
                 </TabsTrigger>
               </TabsList>
 
@@ -361,31 +392,96 @@ export default function ProductDetail() {
               </TabsContent>
 
               <TabsContent value="reviews" className="mt-8">
-                <div className="max-w-3xl space-y-6">
-                  {product.reviews.map((review) => (
-                    <div key={review.id} className="border-b border-border pb-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{review.name}</span>
-                          <div className="flex gap-0.5">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={cn(
-                                  "h-4 w-4",
-                                  star <= review.rating
-                                    ? "text-gold fill-gold"
-                                    : "text-muted-foreground"
-                                )}
-                              />
-                            ))}
-                          </div>
+                <div className="grid lg:grid-cols-3 gap-8">
+                  {/* Reviews Summary */}
+                  <div className="lg:col-span-1">
+                    <div className="bg-card rounded-xl p-6 shadow-soft sticky top-28">
+                      <div className="text-center mb-6">
+                        <div className="font-display text-5xl font-bold text-foreground">
+                          {averageRating.toFixed(1)}
                         </div>
-                        <span className="text-sm text-muted-foreground">{review.date}</span>
+                        <div className="flex justify-center gap-0.5 mt-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={cn(
+                                "h-5 w-5",
+                                star <= Math.round(averageRating)
+                                  ? "text-gold fill-gold"
+                                  : "text-muted-foreground"
+                              )}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Based on {reviews.length} reviews
+                        </p>
                       </div>
-                      <p className="text-muted-foreground">{review.comment}</p>
+
+                      {/* Rating Distribution */}
+                      <div className="space-y-2">
+                        {ratingDistribution.map(({ star, count, percentage }) => (
+                          <div key={star} className="flex items-center gap-3">
+                            <span className="text-sm w-3">{star}</span>
+                            <Star className="h-4 w-4 text-gold fill-gold" />
+                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gold rounded-full transition-all"
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                            <span className="text-sm text-muted-foreground w-8">
+                              {count}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Reviews List & Form */}
+                  <div className="lg:col-span-2 space-y-8">
+                    {/* Review Form */}
+                    <ReviewForm productId={productId} onReviewSubmitted={handleReviewSubmitted} />
+
+                    {/* Reviews List */}
+                    <div className="space-y-6">
+                      <h3 className="font-display text-xl font-semibold">
+                        Customer Reviews ({reviews.length})
+                      </h3>
+                      {reviews.map((review) => (
+                        <div key={review.id} className="border-b border-border pb-6">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                <span className="font-medium text-primary">
+                                  {review.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-medium">{review.name}</span>
+                                <div className="flex gap-0.5">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={cn(
+                                        "h-4 w-4",
+                                        star <= review.rating
+                                          ? "text-gold fill-gold"
+                                          : "text-muted-foreground"
+                                      )}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-sm text-muted-foreground">{review.date}</span>
+                          </div>
+                          <p className="text-muted-foreground mt-3">{review.comment}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>
