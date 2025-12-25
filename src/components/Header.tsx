@@ -1,24 +1,42 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Search, Heart, ShoppingBag, Menu, X, ChevronDown } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Search, Heart, ShoppingBag, Menu, X, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
+import { ethnicSubcategories, westernSubcategories } from "@/data/products";
 
-const menuItems = [
+interface MenuItem {
+  name: string;
+  href: string;
+  submenu?: { name: string; href: string }[];
+}
+
+const menuItems: MenuItem[] = [
   { name: "Home", href: "/" },
-  { name: "Bestsellers", href: "/shop?category=bestsellers" },
-  { name: "New Arrivals", href: "/shop?category=new-arrivals" },
-  { name: "Ethnic Wear", href: "/shop?category=ethnic-wear" },
-  { name: "Western Wear", href: "/shop?category=western-wear" },
-  { name: "Summer Collection", href: "/shop?category=summer" },
-  { name: "Winter Wear", href: "/shop?category=winter" },
+  { name: "Bestsellers", href: "/bestsellers" },
+  { name: "New Arrivals", href: "/new-arrivals" },
+  { 
+    name: "Ethnic Wear", 
+    href: "/ethnic-wear",
+    submenu: ethnicSubcategories
+  },
+  { 
+    name: "Western Wear", 
+    href: "/western-wear",
+    submenu: westernSubcategories
+  },
+  { name: "Summer Collection", href: "/summer-collection" },
+  { name: "Winter Wear", href: "/winter-wear" },
   { name: "Contact", href: "/contact" },
 ];
 
 export default function Header() {
+  const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [expandedMobileMenu, setExpandedMobileMenu] = useState<string | null>(null);
   const { totalItems, setIsCartOpen } = useCart();
 
   useEffect(() => {
@@ -39,6 +57,17 @@ export default function Header() {
       document.body.style.overflow = "unset";
     };
   }, [isMobileMenuOpen]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setExpandedMobileMenu(null);
+  }, [location.pathname]);
+
+  const isActive = (href: string) => {
+    if (href === "/") return location.pathname === "/";
+    return location.pathname.startsWith(href);
+  };
 
   return (
     <>
@@ -63,16 +92,68 @@ export default function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-6">
+            <nav className="hidden lg:flex items-center gap-1">
               {menuItems.map((item) => (
-                <Link
+                <div
                   key={item.name}
-                  to={item.href}
-                  className="font-body text-sm font-medium text-foreground/80 hover:text-primary transition-colors relative group"
+                  className="relative"
+                  onMouseEnter={() => item.submenu && setActiveDropdown(item.name)}
+                  onMouseLeave={() => setActiveDropdown(null)}
                 >
-                  {item.name}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gold transition-all duration-300 group-hover:w-full" />
-                </Link>
+                  <Link
+                    to={item.href}
+                    className={cn(
+                      "font-body text-sm font-medium px-4 py-2 rounded-md transition-all relative group flex items-center gap-1",
+                      isActive(item.href)
+                        ? "text-primary bg-primary/5"
+                        : "text-foreground/80 hover:text-primary hover:bg-primary/5"
+                    )}
+                  >
+                    {item.name}
+                    {item.submenu && (
+                      <ChevronDown className={cn(
+                        "h-4 w-4 transition-transform duration-200",
+                        activeDropdown === item.name && "rotate-180"
+                      )} />
+                    )}
+                    {isActive(item.href) && (
+                      <span className="absolute -bottom-1 left-4 right-4 h-0.5 bg-gold" />
+                    )}
+                  </Link>
+
+                  {/* Mega Dropdown */}
+                  {item.submenu && (
+                    <div
+                      className={cn(
+                        "absolute top-full left-0 mt-1 w-64 bg-background rounded-lg shadow-card border border-border overflow-hidden transition-all duration-200 origin-top",
+                        activeDropdown === item.name
+                          ? "opacity-100 scale-100 visible"
+                          : "opacity-0 scale-95 invisible"
+                      )}
+                    >
+                      <div className="p-2">
+                        {item.submenu.map((subitem) => (
+                          <Link
+                            key={subitem.name}
+                            to={subitem.href}
+                            className="flex items-center justify-between px-4 py-3 rounded-md text-sm text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors"
+                          >
+                            {subitem.name}
+                            <ChevronRight className="h-4 w-4 opacity-50" />
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="border-t border-border p-3">
+                        <Link
+                          to={item.href}
+                          className="block text-center text-sm font-medium text-primary hover:underline"
+                        >
+                          View All {item.name}
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ))}
             </nav>
 
@@ -126,30 +207,84 @@ export default function Header() {
         {/* Menu Panel */}
         <div
           className={cn(
-            "absolute top-0 right-0 h-full w-80 max-w-[85vw] bg-background shadow-2xl transition-transform duration-500 ease-out",
+            "absolute top-0 right-0 h-full w-80 max-w-[85vw] bg-background shadow-2xl transition-transform duration-500 ease-out overflow-y-auto",
             isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
           )}
         >
           <div className="flex flex-col h-full pt-20 pb-8 px-6">
-            <nav className="flex flex-col gap-2">
+            <nav className="flex flex-col gap-1">
               {menuItems.map((item, index) => (
-                <Link
+                <div
                   key={item.name}
-                  to={item.href}
                   className={cn(
-                    "font-display text-xl py-3 border-b border-border text-foreground hover:text-primary transition-all",
                     "opacity-0 translate-x-8",
                     isMobileMenuOpen && "animate-fade-in"
                   )}
                   style={{ animationDelay: `${index * 50}ms` }}
-                  onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  {item.name}
-                </Link>
+                  {item.submenu ? (
+                    <div>
+                      <button
+                        onClick={() => setExpandedMobileMenu(
+                          expandedMobileMenu === item.name ? null : item.name
+                        )}
+                        className={cn(
+                          "w-full flex items-center justify-between font-display text-xl py-3 border-b border-border transition-all",
+                          isActive(item.href) ? "text-primary" : "text-foreground hover:text-primary"
+                        )}
+                      >
+                        {item.name}
+                        <ChevronDown className={cn(
+                          "h-5 w-5 transition-transform duration-200",
+                          expandedMobileMenu === item.name && "rotate-180"
+                        )} />
+                      </button>
+
+                      {/* Accordion Content */}
+                      <div
+                        className={cn(
+                          "overflow-hidden transition-all duration-300",
+                          expandedMobileMenu === item.name ? "max-h-96" : "max-h-0"
+                        )}
+                      >
+                        <div className="py-2 pl-4 space-y-1">
+                          {item.submenu.map((subitem) => (
+                            <Link
+                              key={subitem.name}
+                              to={subitem.href}
+                              className="block py-2 text-muted-foreground hover:text-primary transition-colors"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              {subitem.name}
+                            </Link>
+                          ))}
+                          <Link
+                            to={item.href}
+                            className="block py-2 text-primary font-medium"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            View All →
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <Link
+                      to={item.href}
+                      className={cn(
+                        "font-display text-xl py-3 border-b border-border block transition-all",
+                        isActive(item.href) ? "text-primary" : "text-foreground hover:text-primary"
+                      )}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  )}
+                </div>
               ))}
             </nav>
 
-            <div className="mt-auto space-y-4">
+            <div className="mt-auto space-y-4 pt-8">
               <div className="flex gap-4">
                 <Button variant="ghost" size="icon">
                   <Search className="h-5 w-5" />
@@ -158,6 +293,19 @@ export default function Header() {
                   <Heart className="h-5 w-5" />
                 </Button>
               </div>
+
+              {/* Sticky Cart Button for Mobile */}
+              <Button 
+                variant="gold" 
+                className="w-full gap-2"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsCartOpen(true);
+                }}
+              >
+                <ShoppingBag className="h-5 w-5" />
+                View Cart {totalItems > 0 && `(${totalItems})`}
+              </Button>
             </div>
           </div>
         </div>
