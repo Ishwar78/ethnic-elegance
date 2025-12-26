@@ -4,6 +4,7 @@ import { Search, Heart, ShoppingBag, Menu, X, ChevronDown, ChevronRight } from "
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { ethnicSubcategories, westernSubcategories } from "@/data/products";
 
 interface MenuItem {
@@ -38,6 +39,7 @@ export default function Header() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [expandedMobileMenu, setExpandedMobileMenu] = useState<string | null>(null);
   const { totalItems, setIsCartOpen } = useCart();
+  const { totalItems: wishlistItems } = useWishlist();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -162,9 +164,16 @@ export default function Header() {
               <Button variant="ghost" size="icon" className="hidden sm:flex">
                 <Search className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="hidden sm:flex">
-                <Heart className="h-5 w-5" />
-              </Button>
+              <Link to="/wishlist">
+                <Button variant="ghost" size="icon" className="hidden sm:flex relative">
+                  <Heart className="h-5 w-5" />
+                  {wishlistItems > 0 && (
+                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
+                      {wishlistItems > 99 ? "99+" : wishlistItems}
+                    </span>
+                  )}
+                </Button>
+              </Link>
               <Button variant="ghost" size="icon" className="relative" onClick={() => setIsCartOpen(true)}>
                 <ShoppingBag className="h-5 w-5" />
                 {totalItems > 0 && (
@@ -289,9 +298,16 @@ export default function Header() {
                 <Button variant="ghost" size="icon">
                   <Search className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon">
-                  <Heart className="h-5 w-5" />
-                </Button>
+                <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Heart className="h-5 w-5" />
+                    {wishlistItems > 0 && (
+                      <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
+                        {wishlistItems}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
               </div>
 
               {/* Sticky Cart Button for Mobile */}
