@@ -4,6 +4,7 @@ import { Heart, Eye, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { Product } from "@/data/products";
 
 interface ProductCardProps {
@@ -14,8 +15,23 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, index = 0, showTrending = false }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+
+  const isWishlisted = isInWishlist(product.id);
+
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toggleWishlist({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.image,
+      category: product.category,
+      discount: product.discount,
+    });
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -67,7 +83,7 @@ export default function ProductCard({ product, index = 0, showTrending = false }
             isHovered ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
           )}>
             <button
-              onClick={(e) => { e.preventDefault(); setIsWishlisted(!isWishlisted); }}
+              onClick={handleToggleWishlist}
               className={cn(
                 "h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300 shadow-md",
                 isWishlisted ? "bg-destructive text-destructive-foreground" : "bg-background text-foreground hover:bg-primary hover:text-primary-foreground"
