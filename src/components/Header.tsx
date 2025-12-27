@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { ethnicSubcategories, westernSubcategories } from "@/data/products";
+import SearchModal from "@/components/SearchModal";
 
 interface MenuItem {
   name: string;
@@ -38,6 +39,7 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [expandedMobileMenu, setExpandedMobileMenu] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { totalItems, setIsCartOpen } = useCart();
   const { totalItems: wishlistItems } = useWishlist();
 
@@ -161,7 +163,7 @@ export default function Header() {
 
             {/* Right Icons */}
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="hidden sm:flex">
+              <Button variant="ghost" size="icon" className="hidden sm:flex" onClick={() => setIsSearchOpen(true)}>
                 <Search className="h-5 w-5" />
               </Button>
               <Link to="/wishlist">
@@ -295,7 +297,7 @@ export default function Header() {
 
             <div className="mt-auto space-y-4 pt-8">
               <div className="flex gap-4">
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" onClick={() => { setIsMobileMenuOpen(false); setIsSearchOpen(true); }}>
                   <Search className="h-5 w-5" />
                 </Button>
                 <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)}>
@@ -326,6 +328,9 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      {/* Search Modal */}
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 }
