@@ -1,12 +1,20 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Search, Heart, ShoppingBag, Menu, X, ChevronDown, ChevronRight } from "lucide-react";
+import { Search, Heart, ShoppingBag, Menu, X, ChevronDown, ChevronRight, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { ethnicSubcategories, westernSubcategories } from "@/data/products";
 import SearchModal from "@/components/SearchModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface MenuItem {
   name: string;
@@ -42,6 +50,7 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { totalItems, setIsCartOpen } = useCart();
   const { totalItems: wishlistItems } = useWishlist();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -176,6 +185,42 @@ export default function Header() {
                   )}
                 </Button>
               </Link>
+
+              {/* User Account */}
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="hidden sm:flex">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <div className="px-2 py-1.5">
+                      <p className="text-sm font-medium text-foreground">{user.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/wishlist" className="cursor-pointer">
+                        <Heart className="h-4 w-4 mr-2" />
+                        My Wishlist
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link to="/auth">
+                  <Button variant="ghost" size="icon" className="hidden sm:flex">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </Link>
+              )}
+
               <Button variant="ghost" size="icon" className="relative" onClick={() => setIsCartOpen(true)}>
                 <ShoppingBag className="h-5 w-5" />
                 {totalItems > 0 && (
@@ -296,6 +341,33 @@ export default function Header() {
             </nav>
 
             <div className="mt-auto space-y-4 pt-8">
+              {/* User Info for Mobile */}
+              {user ? (
+                <div className="p-4 bg-muted/50 rounded-lg mb-4">
+                  <p className="font-medium text-foreground">{user.name}</p>
+                  <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-2 text-destructive hover:text-destructive"
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button variant="outline" className="w-full gap-2 mb-4">
+                    <User className="h-5 w-5" />
+                    Sign In / Sign Up
+                  </Button>
+                </Link>
+              )}
+
               <div className="flex gap-4">
                 <Button variant="ghost" size="icon" onClick={() => { setIsMobileMenuOpen(false); setIsSearchOpen(true); }}>
                   <Search className="h-5 w-5" />
