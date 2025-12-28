@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ChevronRight, Truck, Shield, CreditCard, CheckCircle2 } from "lucide-react";
@@ -10,14 +10,18 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCart } from "@/contexts/CartContext";
+import { useOrders } from "@/contexts/OrderContext";
 import { toast } from "sonner";
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, subtotal, totalSavings, clearCart } = useCart();
+  const { addOrder } = useOrders();
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [orderId, setOrderId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const formRef = useRef<HTMLFormElement>(null);
 
   const shippingCost = subtotal >= 999 ? 0 : 99;
   const total = subtotal + shippingCost;
@@ -26,9 +30,29 @@ export default function Checkout() {
     e.preventDefault();
     setIsProcessing(true);
 
+    const formData = new FormData(e.currentTarget);
+    const shippingAddress = {
+      firstName: formData.get("firstName") as string,
+      lastName: formData.get("lastName") as string,
+      address: formData.get("address") as string,
+      city: formData.get("city") as string,
+      state: formData.get("state") as string,
+      pincode: formData.get("pincode") as string,
+    };
+
     // Simulate order processing
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
+    // Save order to history
+    const newOrderId = addOrder({
+      items: [...items],
+      subtotal,
+      shipping: shippingCost,
+      total,
+      shippingAddress,
+    });
+
+    setOrderId(newOrderId);
     setIsProcessing(false);
     setOrderComplete(true);
     clearCart();
@@ -72,14 +96,14 @@ export default function Checkout() {
                 Thank you for your order. We've sent a confirmation email with order details.
               </p>
               <p className="text-sm text-muted-foreground mb-8">
-                Order #VAS{Date.now().toString().slice(-8)}
+                Order #{orderId}
               </p>
               <div className="space-y-3">
                 <Button asChild className="w-full">
-                  <Link to="/shop">Continue Shopping</Link>
+                  <Link to="/orders">View Order History</Link>
                 </Button>
                 <Button variant="outline" asChild className="w-full">
-                  <Link to="/">Back to Home</Link>
+                  <Link to="/shop">Continue Shopping</Link>
                 </Button>
               </div>
             </div>

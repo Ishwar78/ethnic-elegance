@@ -7,6 +7,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { OrderProvider } from "@/contexts/OrderContext";
 import CartDrawer from "@/components/CartDrawer";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
@@ -22,6 +23,7 @@ import WinterWear from "./pages/WinterWear";
 import Contact from "./pages/Contact";
 import Wishlist from "./pages/Wishlist";
 import Auth from "./pages/Auth";
+import OrderHistory from "./pages/OrderHistory";
 import NotFound from "./pages/NotFound";
 import InstallPWA from "./components/InstallPWA";
 
@@ -31,35 +33,38 @@ const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/shop" element={<Shop />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/install" element={<Install />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/bestsellers" element={<Bestsellers />} />
-                  <Route path="/new-arrivals" element={<NewArrivals />} />
-                  <Route path="/ethnic-wear" element={<EthnicWear />} />
-                  <Route path="/western-wear" element={<WesternWear />} />
-                  <Route path="/summer-collection" element={<SummerCollection />} />
-                  <Route path="/winter-wear" element={<WinterWear />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-                <CartDrawer />
-                <InstallPWA />
-              </BrowserRouter>
-            </TooltipProvider>
-          </WishlistProvider>
-        </CartProvider>
+        <OrderProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/shop" element={<Shop />} />
+                    <Route path="/product/:id" element={<ProductDetail />} />
+                    <Route path="/install" element={<Install />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/bestsellers" element={<Bestsellers />} />
+                    <Route path="/new-arrivals" element={<NewArrivals />} />
+                    <Route path="/ethnic-wear" element={<EthnicWear />} />
+                    <Route path="/western-wear" element={<WesternWear />} />
+                    <Route path="/summer-collection" element={<SummerCollection />} />
+                    <Route path="/winter-wear" element={<WinterWear />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/wishlist" element={<Wishlist />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/orders" element={<OrderHistory />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <CartDrawer />
+                  <InstallPWA />
+                </BrowserRouter>
+              </TooltipProvider>
+            </WishlistProvider>
+          </CartProvider>
+        </OrderProvider>
       </AuthProvider>
     </QueryClientProvider>
   </HelmetProvider>
