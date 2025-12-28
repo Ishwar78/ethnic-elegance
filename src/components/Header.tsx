@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Search, Heart, ShoppingBag, Menu, X, ChevronDown, ChevronRight, User, LogOut } from "lucide-react";
+import { Search, Heart, ShoppingBag, Menu, X, ChevronDown, ChevronRight, User, LogOut, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
@@ -201,6 +201,12 @@ export default function Header() {
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
+                      <Link to="/orders" className="cursor-pointer">
+                        <Package className="h-4 w-4 mr-2" />
+                        Order History
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link to="/wishlist" className="cursor-pointer">
                         <Heart className="h-4 w-4 mr-2" />
                         My Wishlist
@@ -346,18 +352,26 @@ export default function Header() {
                 <div className="p-4 bg-muted/50 rounded-lg mb-4">
                   <p className="font-medium text-foreground">{user.name}</p>
                   <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-2 text-destructive hover:text-destructive"
-                    onClick={() => {
-                      logout();
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </Button>
+                  <div className="flex gap-2 mt-3">
+                    <Link to="/orders" onClick={() => setIsMobileMenuOpen(false)} className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full gap-2">
+                        <Package className="h-4 w-4" />
+                        Orders
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => {
+                        logout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
