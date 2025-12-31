@@ -24,6 +24,7 @@ import Contact from "./pages/Contact";
 import Wishlist from "./pages/Wishlist";
 import Auth from "./pages/Auth";
 import OrderHistory from "./pages/OrderHistory";
+import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import InstallPWA from "./components/InstallPWA";
