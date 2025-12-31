@@ -24,6 +24,8 @@ import Contact from "./pages/Contact";
 import Wishlist from "./pages/Wishlist";
 import Auth from "./pages/Auth";
 import OrderHistory from "./pages/OrderHistory";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import InstallPWA from "./components/InstallPWA";
 
@@ -56,6 +58,8 @@ const App = () => (
                     <Route path="/wishlist" element={<Wishlist />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/orders" element={<OrderHistory />} />
+                    <Route path="/vastra/admin" element={<AdminLogin />} />
+                    <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   <CartDrawer />
