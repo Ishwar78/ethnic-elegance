@@ -24,6 +24,8 @@ export default function AdminLogin() {
     setIsSubmitting(true);
 
     try {
+      console.log('Attempting to connect to:', `${API_URL}/auth/login`);
+
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
@@ -67,11 +69,19 @@ export default function AdminLogin() {
       // Redirect to admin dashboard
       navigate("/admin");
     } catch (error) {
+      console.error('Login error:', error);
       const errorMsg = error instanceof Error ? error.message : "Network error";
-      setError(errorMsg);
+
+      // Check if it's a connection error
+      if (errorMsg.includes("Failed to fetch") || errorMsg.includes("fetch")) {
+        setError(`Cannot connect to backend API at: ${API_URL}\n\nMake sure the backend server is running on port 5000`);
+      } else {
+        setError(errorMsg);
+      }
+
       toast({
-        title: "Error",
-        description: errorMsg,
+        title: "Connection Error",
+        description: `Cannot reach API. Backend might not be running. Check: ${API_URL}`,
         variant: "destructive",
       });
     } finally {
