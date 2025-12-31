@@ -212,6 +212,17 @@ export default function Header() {
                         My Wishlist
                       </Link>
                     </DropdownMenuItem>
+                    {user?.role === 'admin' && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin" className="cursor-pointer">
+                            <span className="h-4 w-4 mr-2 flex items-center justify-center text-xs font-bold">⚙️</span>
+                            Admin Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive">
                       <LogOut className="h-4 w-4 mr-2" />
