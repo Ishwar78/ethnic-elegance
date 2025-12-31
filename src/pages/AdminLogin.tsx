@@ -113,7 +113,10 @@ export default function AdminLogin() {
 
             {error && (
               <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <p className="text-sm text-destructive">{error}</p>
+                <p className="text-sm text-destructive whitespace-pre-wrap">{error}</p>
+                <p className="text-xs text-destructive/70 mt-2">
+                  API URL: {API_URL}
+                </p>
               </div>
             )}
 
