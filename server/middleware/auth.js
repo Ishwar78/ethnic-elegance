@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production';
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET || 'vasstra_jwt_secret_key_change_in_production_2024';
 
 export const authMiddleware = (req, res, next) => {
   try {
