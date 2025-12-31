@@ -58,7 +58,7 @@ export default function AdminDashboard() {
   // Check if user is admin
   useEffect(() => {
     if (!user || user.role !== 'admin') {
-      navigate('/auth');
+      navigate('/vastra/admin');
     }
   }, [user, navigate]);
 
