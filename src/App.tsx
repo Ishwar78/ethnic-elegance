@@ -57,6 +57,7 @@ const App = () => (
                     <Route path="/wishlist" element={<Wishlist />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/orders" element={<OrderHistory />} />
+                    <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   <CartDrawer />
