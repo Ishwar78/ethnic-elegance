@@ -1,14 +1,18 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // MongoDB connection
-const MONGODB_URI = 'mongodb+srv://sharmaishwar970:ISHWAR123@cluster0.b73q6ph.mongodb.net/Vastra';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://sharmaishwar970:ISHWAR123@cluster0.b73q6ph.mongodb.net/Vastra';
 
 mongoose.connect(MONGODB_URI)
   .then(() => {
