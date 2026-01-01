@@ -1,12 +1,12 @@
 import { Helmet } from "react-helmet-async";
 import Header from "@/components/Header";
 import HeroSlider from "@/components/HeroSlider";
+import GifSection from "@/components/GifSection";
 import CollectionsSection from "@/components/CollectionsSection";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import TrustBadges from "@/components/TrustBadges";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
-
 const Index = () => {
   return (
     <>
@@ -48,6 +48,7 @@ const Index = () => {
         <main>
           <HeroSlider />
           <TrustBadges />
+          <GifSection />
           <CollectionsSection />
           <FeaturedProducts />
         </main>
