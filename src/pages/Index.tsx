@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import Header from "@/components/Header";
 import HeroSlider from "@/components/HeroSlider";
-import GifSection from "@/components/GifSection";
+import MediaShowcase from "@/components/MediaShowcase";
 import CollectionsSection from "@/components/CollectionsSection";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import TrustBadges from "@/components/TrustBadges";
@@ -48,7 +48,7 @@ const Index = () => {
         <main>
           <HeroSlider />
           <TrustBadges />
-          <GifSection />
+          <MediaShowcase />
           <CollectionsSection />
           <FeaturedProducts />
         </main>
