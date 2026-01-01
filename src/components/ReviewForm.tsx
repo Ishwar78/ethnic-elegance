@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Star } from "lucide-react";
+import { useState, useRef } from "react";
+import { Star, ImagePlus, X } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ export interface Review {
   comment: string;
   date: string;
   productId: number;
+  images?: string[];
 }
 
 interface ReviewFormProps {
@@ -33,8 +34,52 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [images, setImages] = useState<string[]>([]);
   const [errors, setErrors] = useState<{ name?: string; rating?: string; comment?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    if (images.length + files.length > 5) {
+      toast({
+        title: "Too many images",
+        description: "You can upload maximum 5 images.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    Array.from(files).forEach((file) => {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Each image must be less than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setImages((prev) => [...prev, event.target!.result as string]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +109,7 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
       comment: result.data.comment,
       date: "Just now",
       productId,
+      images: images.length > 0 ? images : undefined,
     };
 
     onReviewSubmitted(newReview);
@@ -77,6 +123,7 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
     setName("");
     setRating(0);
     setComment("");
+    setImages([]);
     setIsSubmitting(false);
   };
 
@@ -149,6 +196,48 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
             {comment.length}/500
           </span>
         </div>
+      </div>
+
+      {/* Image Upload */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Add Photos (Optional)</label>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImageUpload}
+          className="hidden"
+        />
+        
+        <div className="flex flex-wrap gap-3">
+          {/* Uploaded Images Preview */}
+          {images.map((img, index) => (
+            <div key={index} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border group">
+              <img src={img} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={() => removeImage(index)}
+                className="absolute top-1 right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+          
+          {/* Add Image Button */}
+          {images.length < 5 && (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+            >
+              <ImagePlus className="w-6 h-6" />
+              <span className="text-xs">Add</span>
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">Max 5 images, 5MB each</p>
       </div>
 
       <Button type="submit" variant="hero" disabled={isSubmitting}>
