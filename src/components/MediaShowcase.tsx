@@ -16,8 +16,17 @@ interface MediaItem {
 
 const mediaItems: MediaItem[] = [
   {
-    type: "gif",
-    src: "https://media.tenor.com/7gHmDpVg5O4AAAAd/chaniya-choli-printed-lehenga.gif",
+    type: "video",
+    src: "https://cdn.pixabay.com/video/2020/05/25/39755-425025485_large.mp4",
+    category: "FESTIVE",
+    title: "Festive Special Dress",
+    price: 7499,
+    originalPrice: 10999,
+    alt: "Festive dress video"
+  },
+  {
+    type: "video",
+    src: "https://cdn.pixabay.com/video/2024/02/05/199394-909947976_large.mp4",
     category: "LEHENGA",
     title: "Printed Chaniya Choli",
     price: 4999,
@@ -26,8 +35,8 @@ const mediaItems: MediaItem[] = [
     alt: "Chaniya Choli showcase"
   },
   {
-    type: "gif",
-    src: "https://media.tenor.com/kQJfNt6lH-wAAAAd/chaniya-choli-silk-lehenga.gif",
+    type: "video",
+    src: "https://cdn.pixabay.com/video/2021/10/17/92266-636313091_large.mp4",
     category: "LEHENGA",
     title: "Silk Haldi Yellow Lehenga",
     price: 5499,
@@ -36,8 +45,8 @@ const mediaItems: MediaItem[] = [
     alt: "Yellow Silk Lehenga"
   },
   {
-    type: "gif",
-    src: "https://media.tenor.com/9cJNHWYpDkkAAAAd/chaniya-choli-silk-lehenga-choli.gif",
+    type: "video",
+    src: "https://cdn.pixabay.com/video/2020/09/06/49214-457117774_large.mp4",
     category: "ETHNIC WEAR",
     title: "Embroidered Lehenga Set",
     price: 12999,
@@ -46,8 +55,8 @@ const mediaItems: MediaItem[] = [
     alt: "Embroidered Lehenga"
   },
   {
-    type: "gif",
-    src: "https://media.tenor.com/RzVJrEfDNs4AAAAd/indian-girl-saree.gif",
+    type: "video",
+    src: "https://cdn.pixabay.com/video/2019/09/14/27153-361227498_large.mp4",
     category: "SAREE",
     title: "Elegant Silk Saree",
     price: 8999,
@@ -56,22 +65,13 @@ const mediaItems: MediaItem[] = [
   },
   {
     type: "video",
-    src: "https://assets.mixkit.co/videos/preview/mixkit-woman-modeling-in-front-of-a-white-background-42329-large.mp4",
+    src: "https://cdn.pixabay.com/video/2020/07/30/46350-445823346_large.mp4",
     category: "WESTERN",
     title: "Designer Gown Collection",
     price: 6999,
     originalPrice: 9999,
     badge: "BESTSELLER",
     alt: "Designer gown video"
-  },
-  {
-    type: "video",
-    src: "https://assets.mixkit.co/videos/preview/mixkit-portrait-of-a-fashion-woman-with-silver-dress-39875-large.mp4",
-    category: "FESTIVE",
-    title: "Festive Special Dress",
-    price: 7499,
-    originalPrice: 10999,
-    alt: "Festive dress video"
   }
 ];
 
