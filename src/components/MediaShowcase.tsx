@@ -17,39 +17,39 @@ interface MediaItem {
 const mediaItems: MediaItem[] = [
   {
     type: "gif",
-    src: "https://i.pinimg.com/originals/a4/9c/ef/a49cef9c56d5c6d3e9c2c1e3b9d2f5a8.gif",
-    category: "ETHNIC WEAR",
-    title: "Royal Burgundy Kurta Set",
+    src: "https://media.tenor.com/7gHmDpVg5O4AAAAd/chaniya-choli-printed-lehenga.gif",
+    category: "LEHENGA",
+    title: "Printed Chaniya Choli",
     price: 4999,
     originalPrice: 6999,
     badge: "NEW",
-    alt: "Ethnic kurta showcase"
+    alt: "Chaniya Choli showcase"
   },
   {
     type: "gif",
-    src: "https://i.pinimg.com/originals/f3/c7/b5/f3c7b5c8e6f8a9d4e2c1b0a9f8e7d6c5.gif",
-    category: "ANARKALI",
-    title: "Royal Blue Anarkali Set",
+    src: "https://media.tenor.com/kQJfNt6lH-wAAAAd/chaniya-choli-silk-lehenga.gif",
+    category: "LEHENGA",
+    title: "Silk Haldi Yellow Lehenga",
     price: 5499,
     originalPrice: 7999,
     badge: "BESTSELLER",
-    alt: "Anarkali dress showcase"
+    alt: "Yellow Silk Lehenga"
   },
   {
     type: "gif",
-    src: "https://i.pinimg.com/originals/2b/8d/4e/2b8d4e6f8a9c0d1e2f3a4b5c6d7e8f9a.gif",
-    category: "LEHENGA",
-    title: "Pink Bridal Lehenga",
+    src: "https://media.tenor.com/9cJNHWYpDkkAAAAd/chaniya-choli-silk-lehenga-choli.gif",
+    category: "ETHNIC WEAR",
+    title: "Embroidered Lehenga Set",
     price: 12999,
     originalPrice: 18999,
     badge: "NEW",
-    alt: "Lehenga showcase"
+    alt: "Embroidered Lehenga"
   },
   {
     type: "gif",
-    src: "https://i.pinimg.com/originals/5c/7d/9e/5c7d9e8f0a1b2c3d4e5f6a7b8c9d0e1f.gif",
+    src: "https://media.tenor.com/RzVJrEfDNs4AAAAd/indian-girl-saree.gif",
     category: "SAREE",
-    title: "Emerald Silk Saree",
+    title: "Elegant Silk Saree",
     price: 8999,
     originalPrice: 11999,
     alt: "Saree showcase"
