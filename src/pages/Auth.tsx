@@ -216,9 +216,9 @@ export default function Auth() {
                 </p>
               </div>
 
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <p className="text-xs text-muted-foreground text-center">
-                  Note: This is a demo authentication. Your data is stored locally in this browser only.
+              <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
+                <p className="text-xs text-primary text-center font-medium">
+                  ✓ Your data is securely stored in our database. Access your dashboard after login.
                 </p>
               </div>
             </div>
