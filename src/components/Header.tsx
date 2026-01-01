@@ -370,6 +370,12 @@ export default function Header() {
                   <p className="font-medium text-foreground">{user.name}</p>
                   <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                   <div className="flex gap-2 mt-3">
+                    <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full gap-2">
+                        <User className="h-4 w-4" />
+                        Dashboard
+                      </Button>
+                    </Link>
                     <Link to="/orders" onClick={() => setIsMobileMenuOpen(false)} className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-2">
                         <Package className="h-4 w-4" />
