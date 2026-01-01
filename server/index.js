@@ -2,8 +2,10 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
+import User from './models/User.js';
 
 // Load environment variables
 dotenv.config();
@@ -14,9 +16,47 @@ const PORT = process.env.PORT || 5000;
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://sharmaishwar970:ISHWAR123@cluster0.b73q6ph.mongodb.net/Vastra';
 
+// Function to seed admin user if it doesn't exist
+async function initializeAdminUser() {
+  try {
+    const existingAdmin = await User.findOne({ email: 'admin@vasstra.com' });
+
+    if (!existingAdmin) {
+      console.log('🔄 Creating admin user...');
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash('admin@123', salt);
+
+      const adminUser = new User({
+        name: 'Vasstra Admin',
+        email: 'admin@vasstra.com',
+        password: hashedPassword,
+        phone: '+91-9876543210',
+        role: 'admin',
+        isActive: true,
+        address: {
+          street: 'Admin Street',
+          city: 'Admin City',
+          state: 'Admin State',
+          zipCode: '000000',
+          country: 'India'
+        }
+      });
+
+      await adminUser.save();
+      console.log('✅ Admin user created successfully!');
+      console.log('📋 Admin Credentials: admin@vasstra.com / admin@123');
+    } else {
+      console.log('✅ Admin user already exists!');
+    }
+  } catch (error) {
+    console.error('❌ Error initializing admin user:', error);
+  }
+}
+
 mongoose.connect(MONGODB_URI)
-  .then(() => {
+  .then(async () => {
     console.log('✅ MongoDB connected successfully!');
+    await initializeAdminUser();
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
