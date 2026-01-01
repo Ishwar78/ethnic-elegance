@@ -12,6 +12,7 @@ interface MediaItem {
   originalPrice: number;
   badge?: "NEW" | "BESTSELLER";
   alt: string;
+  productId: number;
 }
 
 const mediaItems: MediaItem[] = [
@@ -22,7 +23,8 @@ const mediaItems: MediaItem[] = [
     title: "Festive Special Dress",
     price: 7499,
     originalPrice: 10999,
-    alt: "Festive dress video"
+    alt: "Festive dress video",
+    productId: 1
   },
   {
     type: "video",
@@ -32,7 +34,8 @@ const mediaItems: MediaItem[] = [
     price: 4999,
     originalPrice: 6999,
     badge: "NEW",
-    alt: "Chaniya Choli showcase"
+    alt: "Chaniya Choli showcase",
+    productId: 2
   },
   {
     type: "video",
@@ -42,7 +45,8 @@ const mediaItems: MediaItem[] = [
     price: 5499,
     originalPrice: 7999,
     badge: "BESTSELLER",
-    alt: "Yellow Silk Lehenga"
+    alt: "Yellow Silk Lehenga",
+    productId: 3
   },
   {
     type: "video",
@@ -52,7 +56,8 @@ const mediaItems: MediaItem[] = [
     price: 12999,
     originalPrice: 18999,
     badge: "NEW",
-    alt: "Embroidered Lehenga"
+    alt: "Embroidered Lehenga",
+    productId: 4
   },
   {
     type: "video",
@@ -61,7 +66,8 @@ const mediaItems: MediaItem[] = [
     title: "Elegant Silk Saree",
     price: 8999,
     originalPrice: 11999,
-    alt: "Saree showcase"
+    alt: "Saree showcase",
+    productId: 5
   },
   {
     type: "video",
@@ -71,7 +77,51 @@ const mediaItems: MediaItem[] = [
     price: 6999,
     originalPrice: 9999,
     badge: "BESTSELLER",
-    alt: "Designer gown video"
+    alt: "Designer gown video",
+    productId: 6
+  },
+  {
+    type: "video",
+    src: "https://cdn.pixabay.com/video/2016/09/19/5352-184025560_large.mp4",
+    category: "KURTA",
+    title: "Embroidered Anarkali Kurta",
+    price: 3999,
+    originalPrice: 5999,
+    badge: "NEW",
+    alt: "Anarkali Kurta showcase",
+    productId: 7
+  },
+  {
+    type: "video",
+    src: "https://cdn.pixabay.com/video/2020/06/09/41594-430315498_large.mp4",
+    category: "SAREE",
+    title: "Banarasi Silk Saree",
+    price: 15999,
+    originalPrice: 21999,
+    badge: "BESTSELLER",
+    alt: "Banarasi Saree video",
+    productId: 8
+  },
+  {
+    type: "video",
+    src: "https://cdn.pixabay.com/video/2019/06/07/24195-341553322_large.mp4",
+    category: "TRADITIONAL",
+    title: "Bridal Lehenga Collection",
+    price: 24999,
+    originalPrice: 35999,
+    alt: "Bridal Lehenga showcase",
+    productId: 1
+  },
+  {
+    type: "video",
+    src: "https://cdn.pixabay.com/video/2021/02/20/65897-514476498_large.mp4",
+    category: "ETHNIC WEAR",
+    title: "Designer Salwar Suit",
+    price: 4499,
+    originalPrice: 6499,
+    badge: "NEW",
+    alt: "Salwar Suit video",
+    productId: 2
   }
 ];
 
@@ -151,7 +201,10 @@ const MediaShowcase = () => {
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
                 >
-                  <div className="bg-[#faf6f1] rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group">
+                  <Link 
+                    to={`/product/${item.productId}`}
+                    className="bg-[#faf6f1] rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group block"
+                  >
                     {/* Media Container */}
                     <div className="relative aspect-[3/4] overflow-hidden">
                       {!loadedItems.has(index) && (
@@ -208,10 +261,16 @@ const MediaShowcase = () => {
                       <div className={`absolute top-3 right-3 z-20 flex flex-col gap-2 transition-all duration-300 ${
                         hoveredIndex === index ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
                       }`}>
-                        <button className="w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
+                        <button 
+                          onClick={(e) => e.preventDefault()}
+                          className="w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                        >
                           <Heart className="w-4 h-4" />
                         </button>
-                        <button className="w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
+                        <button 
+                          onClick={(e) => e.preventDefault()}
+                          className="w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
                       </div>
@@ -235,7 +294,7 @@ const MediaShowcase = () => {
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               ))}
             </div>
