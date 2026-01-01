@@ -29,6 +29,19 @@ import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import InstallPWA from "./components/InstallPWA";
 
+// Ethnic Wear Subcategories
+import KurtaSets from "./pages/ethnic/KurtaSets";
+import AnarkaliSuits from "./pages/ethnic/AnarkaliSuits";
+import Lehengas from "./pages/ethnic/Lehengas";
+import PartyWear from "./pages/ethnic/PartyWear";
+import FestiveCollection from "./pages/ethnic/FestiveCollection";
+
+// Western Wear Subcategories
+import TopsTees from "./pages/western/TopsTees";
+import Dresses from "./pages/western/Dresses";
+import CoordSets from "./pages/western/CoordSets";
+import CasualWear from "./pages/western/CasualWear";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -51,7 +64,16 @@ const App = () => (
                     <Route path="/bestsellers" element={<Bestsellers />} />
                     <Route path="/new-arrivals" element={<NewArrivals />} />
                     <Route path="/ethnic-wear" element={<EthnicWear />} />
+                    <Route path="/ethnic-wear/kurta-sets" element={<KurtaSets />} />
+                    <Route path="/ethnic-wear/anarkali-suits" element={<AnarkaliSuits />} />
+                    <Route path="/ethnic-wear/lehengas" element={<Lehengas />} />
+                    <Route path="/ethnic-wear/party-wear" element={<PartyWear />} />
+                    <Route path="/ethnic-wear/festive-collection" element={<FestiveCollection />} />
                     <Route path="/western-wear" element={<WesternWear />} />
+                    <Route path="/western-wear/tops-tees" element={<TopsTees />} />
+                    <Route path="/western-wear/dresses" element={<Dresses />} />
+                    <Route path="/western-wear/coord-sets" element={<CoordSets />} />
+                    <Route path="/western-wear/casual-wear" element={<CasualWear />} />
                     <Route path="/summer-collection" element={<SummerCollection />} />
                     <Route path="/winter-wear" element={<WinterWear />} />
                     <Route path="/contact" element={<Contact />} />

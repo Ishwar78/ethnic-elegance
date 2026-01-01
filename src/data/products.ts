@@ -64,16 +64,16 @@ export const sortOptions = [
 ];
 
 export const ethnicSubcategories = [
-  { name: "Kurta Sets", href: "/ethnic-wear?sub=kurta-sets" },
-  { name: "Anarkali Suits", href: "/ethnic-wear?sub=anarkali-suits" },
-  { name: "Lehengas", href: "/ethnic-wear?sub=lehengas" },
-  { name: "Party Wear", href: "/ethnic-wear?sub=party-wear" },
-  { name: "Festive Collection", href: "/ethnic-wear?sub=festive-collection" },
+  { name: "Kurta Sets", href: "/ethnic-wear/kurta-sets" },
+  { name: "Anarkali Suits", href: "/ethnic-wear/anarkali-suits" },
+  { name: "Lehengas", href: "/ethnic-wear/lehengas" },
+  { name: "Party Wear", href: "/ethnic-wear/party-wear" },
+  { name: "Festive Collection", href: "/ethnic-wear/festive-collection" },
 ];
 
 export const westernSubcategories = [
-  { name: "Tops & Tees", href: "/western-wear?sub=tops-tees" },
-  { name: "Dresses", href: "/western-wear?sub=dresses" },
-  { name: "Co-ord Sets", href: "/western-wear?sub=coord-sets" },
-  { name: "Casual Wear", href: "/western-wear?sub=casual-wear" },
+  { name: "Tops & Tees", href: "/western-wear/tops-tees" },
+  { name: "Dresses", href: "/western-wear/dresses" },
+  { name: "Co-ord Sets", href: "/western-wear/coord-sets" },
+  { name: "Casual Wear", href: "/western-wear/casual-wear" },
 ];
