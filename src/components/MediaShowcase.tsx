@@ -1,51 +1,90 @@
 import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Eye, ShoppingBag } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface MediaItem {
   type: "gif" | "video";
   src: string;
+  category: string;
   title: string;
+  price: number;
+  originalPrice: number;
+  badge?: "NEW" | "BESTSELLER";
   alt: string;
 }
 
 const mediaItems: MediaItem[] = [
   {
     type: "gif",
-    src: "https://media.giphy.com/media/3o7TKMt1VVNkHV2PaE/giphy.gif",
-    title: "Fashion Forward",
-    alt: "Fashion showcase"
+    src: "https://i.pinimg.com/originals/a4/9c/ef/a49cef9c56d5c6d3e9c2c1e3b9d2f5a8.gif",
+    category: "ETHNIC WEAR",
+    title: "Royal Burgundy Kurta Set",
+    price: 4999,
+    originalPrice: 6999,
+    badge: "NEW",
+    alt: "Ethnic kurta showcase"
+  },
+  {
+    type: "gif",
+    src: "https://i.pinimg.com/originals/f3/c7/b5/f3c7b5c8e6f8a9d4e2c1b0a9f8e7d6c5.gif",
+    category: "ANARKALI",
+    title: "Royal Blue Anarkali Set",
+    price: 5499,
+    originalPrice: 7999,
+    badge: "BESTSELLER",
+    alt: "Anarkali dress showcase"
+  },
+  {
+    type: "gif",
+    src: "https://i.pinimg.com/originals/2b/8d/4e/2b8d4e6f8a9c0d1e2f3a4b5c6d7e8f9a.gif",
+    category: "LEHENGA",
+    title: "Pink Bridal Lehenga",
+    price: 12999,
+    originalPrice: 18999,
+    badge: "NEW",
+    alt: "Lehenga showcase"
+  },
+  {
+    type: "gif",
+    src: "https://i.pinimg.com/originals/5c/7d/9e/5c7d9e8f0a1b2c3d4e5f6a7b8c9d0e1f.gif",
+    category: "SAREE",
+    title: "Emerald Silk Saree",
+    price: 8999,
+    originalPrice: 11999,
+    alt: "Saree showcase"
   },
   {
     type: "video",
     src: "https://assets.mixkit.co/videos/preview/mixkit-woman-modeling-in-front-of-a-white-background-42329-large.mp4",
-    title: "Elegance in Motion",
-    alt: "Model showcase video"
-  },
-  {
-    type: "gif",
-    src: "https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif",
-    title: "Style Statement",
-    alt: "Style showcase"
+    category: "WESTERN",
+    title: "Designer Gown Collection",
+    price: 6999,
+    originalPrice: 9999,
+    badge: "BESTSELLER",
+    alt: "Designer gown video"
   },
   {
     type: "video",
     src: "https://assets.mixkit.co/videos/preview/mixkit-portrait-of-a-fashion-woman-with-silver-dress-39875-large.mp4",
-    title: "Premium Collection",
-    alt: "Elegant fashion video"
+    category: "FESTIVE",
+    title: "Festive Special Dress",
+    price: 7499,
+    originalPrice: 10999,
+    alt: "Festive dress video"
   }
 ];
 
 const MediaShowcase = () => {
   const [loadedItems, setLoadedItems] = useState<Set<number>>(new Set());
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true,
-    align: "center",
-    skipSnaps: false
+    align: "start",
+    skipSnaps: false,
+    slidesToScroll: 1
   });
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
 
   const handleLoad = (index: number) => {
     setLoadedItems(prev => new Set([...prev, index]));
@@ -59,25 +98,17 @@ const MediaShowcase = () => {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
-  const scrollTo = useCallback((index: number) => {
-    if (emblaApi) emblaApi.scrollTo(index);
-  }, [emblaApi]);
-
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setSelectedIndex(emblaApi.selectedScrollSnap());
-    setCanScrollPrev(emblaApi.canScrollPrev());
-    setCanScrollNext(emblaApi.canScrollNext());
   }, [emblaApi]);
 
   useEffect(() => {
     if (!emblaApi) return;
     onSelect();
     emblaApi.on("select", onSelect);
-    emblaApi.on("reInit", onSelect);
     return () => {
       emblaApi.off("select", onSelect);
-      emblaApi.off("reInit", onSelect);
     };
   }, [emblaApi, onSelect]);
 
@@ -86,80 +117,132 @@ const MediaShowcase = () => {
     if (!emblaApi) return;
     const interval = setInterval(() => {
       emblaApi.scrollNext();
-    }, 5000);
+    }, 4000);
     return () => clearInterval(interval);
   }, [emblaApi]);
 
+  const getDiscount = (original: number, current: number) => {
+    return Math.round(((original - current) / original) * 100);
+  };
+
   return (
-    <section className="py-16 bg-gradient-to-b from-background via-secondary/10 to-background overflow-hidden">
+    <section className="py-16 bg-[#f8f5f0] overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <span className="text-primary font-medium tracking-widest text-sm uppercase mb-2 block">
-            Live Showcase
+            Live Collection
           </span>
           <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
-            Experience the Elegance
+            Trending Ethnic Wear
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            Watch our stunning collection come to life
+            Experience our stunning collection in motion
           </p>
         </div>
         
-        <div className="relative max-w-5xl mx-auto">
+        <div className="relative">
           {/* Carousel */}
-          <div className="overflow-hidden rounded-2xl" ref={emblaRef}>
-            <div className="flex">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex -ml-4">
               {mediaItems.map((item, index) => (
                 <div 
                   key={index}
-                  className="flex-[0_0_100%] min-w-0 md:flex-[0_0_80%] pl-4"
+                  className="flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_25%] min-w-0 pl-4"
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
                 >
-                  <div className="relative aspect-video overflow-hidden rounded-2xl shadow-card group">
-                    {!loadedItems.has(index) && (
-                      <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center z-10">
-                        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                  <div className="bg-[#faf6f1] rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group">
+                    {/* Media Container */}
+                    <div className="relative aspect-[3/4] overflow-hidden">
+                      {!loadedItems.has(index) && (
+                        <div className="absolute inset-0 bg-[#f0ebe4] animate-pulse flex items-center justify-center z-10">
+                          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      )}
+                      
+                      {item.type === "gif" ? (
+                        <img
+                          src={item.src}
+                          alt={item.alt}
+                          className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
+                            loadedItems.has(index) ? "opacity-100" : "opacity-0"
+                          }`}
+                          onLoad={() => handleLoad(index)}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <video
+                          src={item.src}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
+                            loadedItems.has(index) ? "opacity-100" : "opacity-0"
+                          }`}
+                          onLoadedData={() => handleLoad(index)}
+                        />
+                      )}
+                      
+                      {/* Discount Badge */}
+                      <div className="absolute top-3 left-3 z-20">
+                        <span className="px-2 py-1 bg-[#d64545] text-white text-xs font-bold rounded">
+                          -{getDiscount(item.originalPrice, item.price)}%
+                        </span>
                       </div>
-                    )}
-                    
-                    {item.type === "gif" ? (
-                      <img
-                        src={item.src}
-                        alt={item.alt}
-                        className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${
-                          loadedItems.has(index) ? "opacity-100" : "opacity-0"
-                        }`}
-                        onLoad={() => handleLoad(index)}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <video
-                        src={item.src}
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${
-                          loadedItems.has(index) ? "opacity-100" : "opacity-0"
-                        }`}
-                        onLoadedData={() => handleLoad(index)}
-                      />
-                    )}
-                    
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none" />
-                    
-                    {/* Badge */}
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 bg-background/80 backdrop-blur-sm text-foreground text-xs font-medium rounded-full">
-                        {item.type === "gif" ? "GIF" : "Video"}
-                      </span>
+
+                      {/* NEW/BESTSELLER Badge */}
+                      {item.badge && (
+                        <div className="absolute top-10 left-3 z-20">
+                          <span className={`px-2 py-1 text-xs font-bold rounded ${
+                            item.badge === "NEW" 
+                              ? "bg-[#4a6741] text-white" 
+                              : "bg-[#c9a227] text-foreground"
+                          }`}>
+                            {item.badge}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className={`absolute top-3 right-3 z-20 flex flex-col gap-2 transition-all duration-300 ${
+                        hoveredIndex === index ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
+                      }`}>
+                        <button className="w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
+                          <Heart className="w-4 h-4" />
+                        </button>
+                        <button className="w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Add to Cart Button */}
+                      <div className={`absolute bottom-4 left-4 right-4 z-20 transition-all duration-300 ${
+                        hoveredIndex === index ? "opacity-100 translate-y-0" : "opacity-100 sm:opacity-0 sm:translate-y-4"
+                      }`}>
+                        <button className="w-full py-3 bg-[#c9a227] hover:bg-[#b8922a] text-foreground font-medium rounded-lg flex items-center justify-center gap-2 shadow-md transition-colors">
+                          <ShoppingBag className="w-4 h-4" />
+                          Add to Cart
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Title */}
-                    <div className="absolute bottom-6 left-6 right-6">
-                      <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                    {/* Product Info */}
+                    <div className="p-4">
+                      <span className="text-xs text-muted-foreground tracking-wider uppercase">
+                        {item.category}
+                      </span>
+                      <h3 className="font-display text-lg font-semibold text-foreground mt-1 line-clamp-1">
                         {item.title}
                       </h3>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="font-display text-xl font-bold text-foreground">
+                          ₹{item.price.toLocaleString()}
+                        </span>
+                        <span className="text-sm text-muted-foreground line-through">
+                          ₹{item.originalPrice.toLocaleString()}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -170,44 +253,44 @@ const MediaShowcase = () => {
           {/* Navigation Arrows */}
           <button
             onClick={scrollPrev}
-            className="absolute left-2 md:-left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-background/90 backdrop-blur-sm shadow-card flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
+            className="absolute -left-2 md:-left-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white shadow-lg flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all"
             aria-label="Previous slide"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={scrollNext}
-            className="absolute right-2 md:-right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-background/90 backdrop-blur-sm shadow-card flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
+            className="absolute -right-2 md:-right-5 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white shadow-lg flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all"
             aria-label="Next slide"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5" />
           </button>
-
-          {/* Dots */}
-          <div className="flex justify-center gap-2 mt-6">
-            {mediaItems.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => scrollTo(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  index === selectedIndex 
-                    ? "bg-primary w-8" 
-                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
         </div>
 
-        {/* CTA */}
-        <div className="text-center mt-12">
-          <a
-            href="/shop"
+        {/* Dots */}
+        <div className="flex justify-center gap-2 mt-8">
+          {mediaItems.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => emblaApi?.scrollTo(index)}
+              className={`h-2 rounded-full transition-all ${
+                index === selectedIndex 
+                  ? "bg-primary w-6" 
+                  : "bg-muted-foreground/30 w-2 hover:bg-muted-foreground/50"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* View All Button */}
+        <div className="text-center mt-10">
+          <Link
+            to="/ethnic-wear"
             className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-medium rounded-full hover:bg-primary/90 transition-all shadow-gold hover:shadow-lg hover:scale-105"
           >
-            Explore Collection
-          </a>
+            View All Collection
+          </Link>
         </div>
       </div>
     </section>
