@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight, Heart, Eye, ShoppingBag } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface MediaItem {
@@ -216,15 +216,6 @@ const MediaShowcase = () => {
                         </button>
                       </div>
 
-                      {/* Add to Cart Button */}
-                      <div className={`absolute bottom-4 left-4 right-4 z-20 transition-all duration-300 ${
-                        hoveredIndex === index ? "opacity-100 translate-y-0" : "opacity-100 sm:opacity-0 sm:translate-y-4"
-                      }`}>
-                        <button className="w-full py-3 bg-[#c9a227] hover:bg-[#b8922a] text-foreground font-medium rounded-lg flex items-center justify-center gap-2 shadow-md transition-colors">
-                          <ShoppingBag className="w-4 h-4" />
-                          Add to Cart
-                        </button>
-                      </div>
                     </div>
 
                     {/* Product Info */}
