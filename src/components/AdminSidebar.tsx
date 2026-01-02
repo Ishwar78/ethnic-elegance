@@ -65,6 +65,7 @@ const frontendPages: SidebarItem[] = [
 
 const adminSections: SidebarItem[] = [
   { title: "Overview", icon: BarChart3, href: "/admin/dashboard?tab=overview" },
+  { title: "Products", icon: ShoppingBag, href: "/admin/dashboard?tab=products" },
   { title: "Users", icon: Users, href: "/admin/dashboard?tab=users" },
   { title: "Orders", icon: Package, href: "/admin/dashboard?tab=orders" },
   { title: "Settings", icon: Settings, href: "/admin/dashboard?tab=settings" },
