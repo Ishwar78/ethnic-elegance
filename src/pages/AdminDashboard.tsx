@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/contexts/AuthContext";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import AdminSidebar from "@/components/AdminSidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Package, ShoppingCart, BarChart3, Search, Edit2, Trash2, Plus } from "lucide-react";
+import { Users, Package, ShoppingCart, BarChart3, Search, Trash2 } from "lucide-react";
 
 interface DashboardStats {
   totalUsers: number;
@@ -44,6 +43,7 @@ interface AdminOrder {
 export default function AdminDashboard() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -197,6 +197,8 @@ export default function AdminDashboard() {
     return null;
   }
 
+  const defaultTab = searchParams.get('tab') || 'overview';
+
   return (
     <>
       <Helmet>
@@ -204,16 +206,16 @@ export default function AdminDashboard() {
         <meta name="description" content="Vasstra Admin Dashboard" />
       </Helmet>
 
-      <Header />
+      <div className="flex min-h-screen w-full bg-background">
+        <AdminSidebar />
 
-      <main className="min-h-screen pt-24 pb-16 bg-background">
-        <div className="container mx-auto px-4">
+        <main className="flex-1 p-6 overflow-auto">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-foreground mb-2">Admin Dashboard</h1>
             <p className="text-muted-foreground">Manage users, orders, and view statistics</p>
           </div>
 
-          <Tabs defaultValue="overview" className="space-y-6">
+          <Tabs defaultValue={defaultTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
@@ -444,10 +446,8 @@ export default function AdminDashboard() {
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-      </main>
-
-      <Footer />
+        </main>
+      </div>
     </>
   );
 }

@@ -409,7 +409,7 @@ export default function UserDashboard() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-primary">₹{order.totalAmount?.toLocaleString('en-IN') || '0'}</p>
+                        <p className="text-2xl font-bold text-primary">₹{order.total?.toLocaleString('en-IN') || '0'}</p>
                         <p className="text-sm text-muted-foreground">{order.items?.length || 0} items</p>
                       </div>
                     </div>
