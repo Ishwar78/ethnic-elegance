@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Users, Package, ShoppingCart, BarChart3, Search, Trash2 } from "lucide-react";
 import ProductManagement from "@/components/ProductManagement";
 import AdminContactManagement from "@/components/AdminContactManagement";
+import AdminTicketManagement from "@/components/AdminTicketManagement";
 
 interface DashboardStats {
   totalUsers: number;
@@ -218,11 +219,12 @@ export default function AdminDashboard() {
           </div>
 
           <Tabs defaultValue={defaultTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="products">Products</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
+              <TabsTrigger value="tickets">Tickets</TabsTrigger>
               <TabsTrigger value="contact">Contact</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
@@ -425,6 +427,11 @@ export default function AdminDashboard() {
                   No orders found.
                 </div>
               )}
+            </TabsContent>
+
+            {/* Tickets Tab */}
+            <TabsContent value="tickets" className="space-y-6">
+              <AdminTicketManagement />
             </TabsContent>
 
             {/* Contact Tab */}

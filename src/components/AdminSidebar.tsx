@@ -18,6 +18,7 @@ import {
   Layers,
   Tag,
   Image,
+  Ticket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -68,6 +69,7 @@ const adminSections: SidebarItem[] = [
   { title: "Products", icon: ShoppingBag, href: "/admin?tab=products" },
   { title: "Users", icon: Users, href: "/admin?tab=users" },
   { title: "Orders", icon: Package, href: "/admin?tab=orders" },
+  { title: "Tickets", icon: Ticket, href: "/admin?tab=tickets" },
   { title: "Contact", icon: Phone, href: "/admin?tab=contact" },
   { title: "Settings", icon: Settings, href: "/admin?tab=settings" },
 ];
