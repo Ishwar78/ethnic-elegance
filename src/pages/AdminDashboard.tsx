@@ -13,6 +13,7 @@ import { Users, Package, ShoppingCart, BarChart3, Search, Trash2 } from "lucide-
 import ProductManagement from "@/components/ProductManagement";
 import AdminContactManagement from "@/components/AdminContactManagement";
 import AdminTicketManagement from "@/components/AdminTicketManagement";
+import AdminBannerManagement from "@/components/AdminBannerManagement";
 
 interface DashboardStats {
   totalUsers: number;
@@ -219,9 +220,10 @@ export default function AdminDashboard() {
           </div>
 
           <Tabs defaultValue={defaultTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7">
+            <TabsList className="grid w-full grid-cols-8">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="products">Products</TabsTrigger>
+              <TabsTrigger value="banners">Banners</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
               <TabsTrigger value="tickets">Tickets</TabsTrigger>
@@ -283,6 +285,11 @@ export default function AdminDashboard() {
             {/* Products Tab */}
             <TabsContent value="products" className="space-y-6">
               <ProductManagement />
+            </TabsContent>
+
+            {/* Banners Tab */}
+            <TabsContent value="banners" className="space-y-6">
+              <AdminBannerManagement />
             </TabsContent>
 
             {/* Users Tab */}
