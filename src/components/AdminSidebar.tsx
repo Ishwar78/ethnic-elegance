@@ -14,10 +14,9 @@ import {
   BarChart3,
   ChevronLeft,
   ChevronRight,
-  Menu,
   Layers,
   Tag,
-  Image,
+  Image as ImageIcon,
   Ticket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -67,6 +66,7 @@ const frontendPages: SidebarItem[] = [
 const adminSections: SidebarItem[] = [
   { title: "Overview", icon: BarChart3, href: "/admin?tab=overview" },
   { title: "Products", icon: ShoppingBag, href: "/admin?tab=products" },
+  { title: "Banners", icon: ImageIcon, href: "/admin?tab=banners" },
   { title: "Users", icon: Users, href: "/admin?tab=users" },
   { title: "Orders", icon: Package, href: "/admin?tab=orders" },
   { title: "Tickets", icon: Ticket, href: "/admin?tab=tickets" },
