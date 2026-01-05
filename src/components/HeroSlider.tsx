@@ -95,27 +95,48 @@ export default function HeroSlider() {
   return (
     <section className="relative h-screen min-h-[600px] overflow-hidden bg-gradient-hero">
       {/* Background Slides */}
-      {slides.map((slide, index) => (
-        <div
-          key={index}
-          className={cn(
-            "absolute inset-0 transition-all duration-1000 ease-out",
-            index === currentSlide
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-105"
-          )}
-        >
-          {/* Diagonal Image Container */}
-          <div className="absolute right-0 top-0 h-full w-full md:w-[65%] overflow-hidden">
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat transform origin-left md:skew-x-[-6deg] md:translate-x-12 scale-110"
-              style={{ backgroundImage: `url(${slide.image})` }}
-            />
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent md:skew-x-[-6deg] md:translate-x-12" />
+      {slides.map((slide, index) => {
+        const mediaUrl = slide.mediaUrl || slide.image;
+        const isVideo = slide.mediaType === 'video' || mediaUrl?.endsWith('.mp4');
+        const isGif = slide.mediaType === 'gif' || mediaUrl?.endsWith('.gif');
+
+        return (
+          <div
+            key={index}
+            className={cn(
+              "absolute inset-0 transition-all duration-1000 ease-out",
+              index === currentSlide
+                ? "opacity-100 scale-100"
+                : "opacity-0 scale-105"
+            )}
+          >
+            {/* Diagonal Media Container */}
+            <div className="absolute right-0 top-0 h-full w-full md:w-[65%] overflow-hidden">
+              {isVideo ? (
+                <>
+                  <video
+                    src={mediaUrl}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover transform origin-left md:skew-x-[-6deg] md:translate-x-12 scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent md:skew-x-[-6deg] md:translate-x-12" />
+                </>
+              ) : (
+                <>
+                  <div
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat transform origin-left md:skew-x-[-6deg] md:translate-x-12 scale-110"
+                    style={{ backgroundImage: `url(${mediaUrl})` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent md:skew-x-[-6deg] md:translate-x-12" />
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Content */}
       <div className="relative z-10 h-full container mx-auto px-4">
