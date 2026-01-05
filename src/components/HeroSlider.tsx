@@ -58,14 +58,35 @@ export default function HeroSlider() {
   useEffect(() => {
     const fetchHeroMedia = async () => {
       try {
-        const response = await fetch(`${API_URL}/hero-media`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+        const response = await fetch(`${API_URL}/hero-media`, {
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          console.warn(`Hero media API returned ${response.status}, using default slides`);
+          return;
+        }
+
         const data = await response.json();
         if (data.success && data.media && data.media.length > 0) {
           setSlides(data.media);
+          console.log('✅ Hero media loaded successfully');
         }
       } catch (error) {
-        console.error('Error fetching hero media:', error);
-        // Keep default slides on error
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.warn('Hero media fetch timeout, using default slides');
+        } else {
+          console.warn('Hero media API unavailable, using default slides');
+        }
+        // Keep default slides on error - this is expected behavior
       }
     };
 
