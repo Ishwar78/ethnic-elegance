@@ -50,6 +50,27 @@ const defaultSlides: HeroSlide[] = [
 export default function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [slides, setSlides] = useState<HeroSlide[]>(defaultSlides);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  // Fetch hero media from API
+  useEffect(() => {
+    const fetchHeroMedia = async () => {
+      try {
+        const response = await fetch(`${API_URL}/hero-media`);
+        const data = await response.json();
+        if (data.success && data.media && data.media.length > 0) {
+          setSlides(data.media);
+        }
+      } catch (error) {
+        console.error('Error fetching hero media:', error);
+        // Keep default slides on error
+      }
+    };
+
+    fetchHeroMedia();
+  }, [API_URL]);
 
   const goToSlide = useCallback((index: number) => {
     if (isAnimating) return;
