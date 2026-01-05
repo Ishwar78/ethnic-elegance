@@ -18,6 +18,7 @@ import {
   Tag,
   Image as ImageIcon,
   Ticket,
+  Film,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,7 @@ const frontendPages: SidebarItem[] = [
 
 const adminSections: SidebarItem[] = [
   { title: "Overview", icon: BarChart3, href: "/admin?tab=overview" },
+  { title: "Hero Slider", icon: Film, href: "/admin?tab=hero-media" },
   { title: "Products", icon: ShoppingBag, href: "/admin?tab=products" },
   { title: "Categories", icon: Layers, href: "/admin?tab=categories" },
   { title: "Coupons", icon: Ticket, href: "/admin?tab=coupons" },

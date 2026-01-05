@@ -16,6 +16,7 @@ import AdminTicketManagement from "@/components/AdminTicketManagement";
 import AdminBannerManagement from "@/components/AdminBannerManagement";
 import AdminCategoryManagement from "@/components/AdminCategoryManagement";
 import AdminCouponManagement from "@/components/AdminCouponManagement";
+import AdminHeroMediaManagement from "@/components/AdminHeroMediaManagement";
 
 interface DashboardStats {
   totalUsers: number;
@@ -224,6 +225,7 @@ export default function AdminDashboard() {
           <Tabs defaultValue={defaultTab} className="space-y-6">
             <TabsList className="flex flex-wrap gap-1">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="hero-media">Hero Slider</TabsTrigger>
               <TabsTrigger value="products">Products</TabsTrigger>
               <TabsTrigger value="categories">Categories</TabsTrigger>
               <TabsTrigger value="coupons">Coupons</TabsTrigger>
@@ -284,6 +286,11 @@ export default function AdminDashboard() {
                   </Card>
                 </div>
               )}
+            </TabsContent>
+
+            {/* Hero Media Tab */}
+            <TabsContent value="hero-media" className="space-y-6">
+              <AdminHeroMediaManagement />
             </TabsContent>
 
             {/* Products Tab */}

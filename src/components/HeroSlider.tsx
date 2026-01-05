@@ -6,7 +6,21 @@ import heroImage1 from "@/assets/hero-model-1.jpg";
 import heroImage2 from "@/assets/hero-model-2.jpg";
 import heroImage3 from "@/assets/hero-model-3.jpg";
 
-const slides = [
+interface HeroSlide {
+  _id?: string;
+  image?: string;
+  video?: string;
+  gif?: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  cta: string;
+  ctaLink: string;
+  mediaUrl?: string;
+  mediaType?: 'video' | 'gif' | 'image';
+}
+
+const defaultSlides: HeroSlide[] = [
   {
     image: heroImage1,
     title: "New Arrivals",
@@ -36,6 +50,48 @@ const slides = [
 export default function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [slides, setSlides] = useState<HeroSlide[]>(defaultSlides);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  // Fetch hero media from API
+  useEffect(() => {
+    const fetchHeroMedia = async () => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+        const response = await fetch(`${API_URL}/hero-media`, {
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          console.warn(`Hero media API returned ${response.status}, using default slides`);
+          return;
+        }
+
+        const data = await response.json();
+        if (data.success && data.media && data.media.length > 0) {
+          setSlides(data.media);
+          console.log('✅ Hero media loaded successfully');
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.warn('Hero media fetch timeout, using default slides');
+        } else {
+          console.warn('Hero media API unavailable, using default slides');
+        }
+        // Keep default slides on error - this is expected behavior
+      }
+    };
+
+    fetchHeroMedia();
+  }, [API_URL]);
 
   const goToSlide = useCallback((index: number) => {
     if (isAnimating) return;
@@ -60,27 +116,48 @@ export default function HeroSlider() {
   return (
     <section className="relative h-screen min-h-[600px] overflow-hidden bg-gradient-hero">
       {/* Background Slides */}
-      {slides.map((slide, index) => (
-        <div
-          key={index}
-          className={cn(
-            "absolute inset-0 transition-all duration-1000 ease-out",
-            index === currentSlide
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-105"
-          )}
-        >
-          {/* Diagonal Image Container */}
-          <div className="absolute right-0 top-0 h-full w-full md:w-[65%] overflow-hidden">
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat transform origin-left md:skew-x-[-6deg] md:translate-x-12 scale-110"
-              style={{ backgroundImage: `url(${slide.image})` }}
-            />
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent md:skew-x-[-6deg] md:translate-x-12" />
+      {slides.map((slide, index) => {
+        const mediaUrl = slide.mediaUrl || slide.image;
+        const isVideo = slide.mediaType === 'video' || mediaUrl?.endsWith('.mp4');
+        const isGif = slide.mediaType === 'gif' || mediaUrl?.endsWith('.gif');
+
+        return (
+          <div
+            key={index}
+            className={cn(
+              "absolute inset-0 transition-all duration-1000 ease-out",
+              index === currentSlide
+                ? "opacity-100 scale-100"
+                : "opacity-0 scale-105"
+            )}
+          >
+            {/* Diagonal Media Container */}
+            <div className="absolute right-0 top-0 h-full w-full md:w-[65%] overflow-hidden">
+              {isVideo ? (
+                <>
+                  <video
+                    src={mediaUrl}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover transform origin-left md:skew-x-[-6deg] md:translate-x-12 scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent md:skew-x-[-6deg] md:translate-x-12" />
+                </>
+              ) : (
+                <>
+                  <div
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat transform origin-left md:skew-x-[-6deg] md:translate-x-12 scale-110"
+                    style={{ backgroundImage: `url(${mediaUrl})` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent md:skew-x-[-6deg] md:translate-x-12" />
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Content */}
       <div className="relative z-10 h-full container mx-auto px-4">
