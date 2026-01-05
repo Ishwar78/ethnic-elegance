@@ -288,6 +288,11 @@ export default function AdminDashboard() {
               )}
             </TabsContent>
 
+            {/* Hero Media Tab */}
+            <TabsContent value="hero-media" className="space-y-6">
+              <AdminHeroMediaManagement />
+            </TabsContent>
+
             {/* Products Tab */}
             <TabsContent value="products" className="space-y-6">
               <ProductManagement />
