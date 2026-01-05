@@ -66,10 +66,12 @@ const frontendPages: SidebarItem[] = [
 const adminSections: SidebarItem[] = [
   { title: "Overview", icon: BarChart3, href: "/admin?tab=overview" },
   { title: "Products", icon: ShoppingBag, href: "/admin?tab=products" },
+  { title: "Categories", icon: Layers, href: "/admin?tab=categories" },
+  { title: "Coupons", icon: Ticket, href: "/admin?tab=coupons" },
   { title: "Banners", icon: ImageIcon, href: "/admin?tab=banners" },
   { title: "Users", icon: Users, href: "/admin?tab=users" },
   { title: "Orders", icon: Package, href: "/admin?tab=orders" },
-  { title: "Tickets", icon: Ticket, href: "/admin?tab=tickets" },
+  { title: "Tickets", icon: Phone, href: "/admin?tab=tickets" },
   { title: "Contact", icon: Phone, href: "/admin?tab=contact" },
   { title: "Settings", icon: Settings, href: "/admin?tab=settings" },
 ];

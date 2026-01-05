@@ -14,6 +14,8 @@ import ProductManagement from "@/components/ProductManagement";
 import AdminContactManagement from "@/components/AdminContactManagement";
 import AdminTicketManagement from "@/components/AdminTicketManagement";
 import AdminBannerManagement from "@/components/AdminBannerManagement";
+import AdminCategoryManagement from "@/components/AdminCategoryManagement";
+import AdminCouponManagement from "@/components/AdminCouponManagement";
 
 interface DashboardStats {
   totalUsers: number;
@@ -220,9 +222,11 @@ export default function AdminDashboard() {
           </div>
 
           <Tabs defaultValue={defaultTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-8">
+            <TabsList className="flex flex-wrap gap-1">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="products">Products</TabsTrigger>
+              <TabsTrigger value="categories">Categories</TabsTrigger>
+              <TabsTrigger value="coupons">Coupons</TabsTrigger>
               <TabsTrigger value="banners">Banners</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
@@ -285,6 +289,16 @@ export default function AdminDashboard() {
             {/* Products Tab */}
             <TabsContent value="products" className="space-y-6">
               <ProductManagement />
+            </TabsContent>
+
+            {/* Categories Tab */}
+            <TabsContent value="categories" className="space-y-6">
+              <AdminCategoryManagement />
+            </TabsContent>
+
+            {/* Coupons Tab */}
+            <TabsContent value="coupons" className="space-y-6">
+              <AdminCouponManagement />
             </TabsContent>
 
             {/* Banners Tab */}
