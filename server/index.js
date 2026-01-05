@@ -71,6 +71,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/hero-media', heroMediaRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
