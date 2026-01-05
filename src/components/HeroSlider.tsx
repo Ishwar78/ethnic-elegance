@@ -6,7 +6,21 @@ import heroImage1 from "@/assets/hero-model-1.jpg";
 import heroImage2 from "@/assets/hero-model-2.jpg";
 import heroImage3 from "@/assets/hero-model-3.jpg";
 
-const slides = [
+interface HeroSlide {
+  _id?: string;
+  image?: string;
+  video?: string;
+  gif?: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  cta: string;
+  ctaLink: string;
+  mediaUrl?: string;
+  mediaType?: 'video' | 'gif' | 'image';
+}
+
+const defaultSlides: HeroSlide[] = [
   {
     image: heroImage1,
     title: "New Arrivals",
