@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
+import heroMediaRoutes from './routes/heroMedia.js';
 import User from './models/User.js';
 
 // Load environment variables
