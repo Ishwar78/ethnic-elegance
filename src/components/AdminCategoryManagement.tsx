@@ -45,6 +45,7 @@ const AdminCategoryManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -54,40 +55,110 @@ const AdminCategoryManagement = () => {
     isActive: true
   });
 
-  const parentCategories = categories.filter(cat => cat.parentId === null);
+  // Load categories on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const fetchCategories = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/categories/admin/all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+
+      const data = await response.json();
+      const categoryList = data.categories.map((cat: any) => ({
+        _id: cat._id,
+        id: cat._id,
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description,
+        parentId: cat.parentId?._id || null,
+        image: cat.image,
+        isActive: cat.isActive,
+        productCount: cat.productCount || 0,
+        createdAt: new Date(cat.createdAt).toISOString().split('T')[0],
+      }));
+      setCategories(categoryList);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      toast.error("Failed to load categories");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const parentCategories = categories.filter(cat => !cat.parentId);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (editingCategory) {
-      setCategories(categories.map(cat => 
-        cat.id === editingCategory.id 
-          ? { 
-              ...cat, 
-              ...formData, 
-              parentId: formData.parentId || null,
-              slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, '-')
-            } 
-          : cat
-      ));
-      toast.success("Category updated successfully");
-    } else {
-      const newCategory: Category = {
-        id: Date.now().toString(),
+
+    if (!formData.name || !formData.slug) {
+      toast.error("Name and slug are required");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const payload = {
         name: formData.name,
-        slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, '-'),
+        slug: formData.slug,
         description: formData.description,
         parentId: formData.parentId || null,
         image: formData.image,
         isActive: formData.isActive,
-        productCount: 0,
-        createdAt: new Date().toISOString().split('T')[0]
       };
-      setCategories([...categories, newCategory]);
-      toast.success("Category added successfully");
+
+      if (editingCategory?._id) {
+        // Update category
+        const response = await fetch(`${API_URL}/categories/${editingCategory._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update category');
+        }
+
+        toast.success("Category updated successfully");
+      } else {
+        // Create new category
+        const response = await fetch(`${API_URL}/categories`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to create category');
+        }
+
+        toast.success("Category added successfully");
+      }
+
+      resetForm();
+      fetchCategories();
+    } catch (error) {
+      console.error('Error saving category:', error);
+      toast.error(error instanceof Error ? error.message : "Failed to save category");
+    } finally {
+      setIsSaving(false);
     }
-    
-    resetForm();
   };
 
   const resetForm = () => {
@@ -116,26 +187,69 @@ const AdminCategoryManagement = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const hasChildren = categories.some(cat => cat.parentId === id);
     if (hasChildren) {
       toast.error("Cannot delete category with subcategories");
       return;
     }
-    setCategories(categories.filter(cat => cat.id !== id));
-    toast.success("Category deleted successfully");
+
+    if (!confirm("Are you sure you want to delete this category?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/categories/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete category');
+      }
+
+      toast.success("Category deleted successfully");
+      fetchCategories();
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast.error("Failed to delete category");
+    }
   };
 
-  const toggleActive = (id: string) => {
-    setCategories(categories.map(cat => 
-      cat.id === id ? { ...cat, isActive: !cat.isActive } : cat
-    ));
-    toast.success("Category status updated");
+  const toggleActive = async (id: string) => {
+    const category = categories.find(cat => cat.id === id || cat._id === id);
+    if (!category) return;
+
+    try {
+      const response = await fetch(`${API_URL}/categories/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...category,
+          isActive: !category.isActive,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update category');
+      }
+
+      toast.success("Category status updated");
+      fetchCategories();
+    } catch (error) {
+      console.error('Error updating category:', error);
+      toast.error("Failed to update category");
+    }
   };
 
   const getParentName = (parentId: string | null) => {
     if (!parentId) return null;
-    const parent = categories.find(cat => cat.id === parentId);
+    const parent = categories.find(cat => cat.id === parentId || cat._id === parentId);
     return parent?.name;
   };
 
