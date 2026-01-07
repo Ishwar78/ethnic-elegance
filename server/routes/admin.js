@@ -1,6 +1,7 @@
 import express from 'express';
 import User from '../models/User.js';
 import Order from '../models/Order.js';
+import Contact from '../models/Contact.js';
 import { authMiddleware, adminMiddleware } from '../middleware/auth.js';
 import bcrypt from 'bcryptjs';
 
