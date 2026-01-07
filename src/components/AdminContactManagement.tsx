@@ -119,6 +119,15 @@ export default function AdminContactManagement() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Loading contact details...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -127,6 +136,7 @@ export default function AdminContactManagement() {
           <p className="text-muted-foreground">Update your store's contact information</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving}>
+          {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           <Save className="h-4 w-4 mr-2" />
           {isSaving ? "Saving..." : "Save Changes"}
         </Button>
