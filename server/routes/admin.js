@@ -256,4 +256,58 @@ router.put('/orders/:id', async (req, res) => {
   }
 });
 
+// Get contact information
+router.get('/contact', async (req, res) => {
+  try {
+    let contact = await Contact.findOne();
+
+    // If no contact exists, create one with defaults
+    if (!contact) {
+      contact = new Contact();
+      await contact.save();
+    }
+
+    res.json({
+      success: true,
+      contact
+    });
+  } catch (error) {
+    console.error('Get contact error:', error);
+    res.status(500).json({ error: 'Failed to fetch contact information' });
+  }
+});
+
+// Update contact information
+router.put('/contact', async (req, res) => {
+  try {
+    const { phone, email, address, businessHours, whatsapp } = req.body;
+
+    let contact = await Contact.findOne();
+
+    // If no contact exists, create one
+    if (!contact) {
+      contact = new Contact();
+    }
+
+    // Update fields
+    if (phone) contact.phone = phone;
+    if (email) contact.email = email;
+    if (address) contact.address = address;
+    if (businessHours) contact.businessHours = businessHours;
+    if (whatsapp) contact.whatsapp = whatsapp;
+
+    contact.updatedAt = new Date();
+    await contact.save();
+
+    res.json({
+      success: true,
+      contact,
+      message: 'Contact information updated successfully'
+    });
+  } catch (error) {
+    console.error('Update contact error:', error);
+    res.status(500).json({ error: 'Failed to update contact information' });
+  }
+});
+
 export default router;
