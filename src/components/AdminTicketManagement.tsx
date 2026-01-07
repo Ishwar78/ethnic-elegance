@@ -102,66 +102,76 @@ export default function AdminTicketManagement() {
     ? tickets 
     : tickets.filter((t) => t.status === filterStatus);
 
-  const handleStatusChange = (ticketId: string, newStatus: string) => {
-    setTickets((prev) =>
-      prev.map((t) =>
-        t.id === ticketId ? { ...t, status: newStatus as SupportTicket["status"] } : t
-      )
-    );
-    toast({
-      title: "Status Updated",
-      description: `Ticket #${ticketId} status changed to ${newStatus}`,
-    });
+  const handleStatusChange = async (ticketId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`${API_URL}/tickets/admin/${ticketId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: "Status Updated",
+          description: `Ticket status changed to ${newStatus}`,
+        });
+        fetchTickets();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update ticket status",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSendResponse = async () => {
     if (!selectedTicket || !responseText.trim()) return;
 
     setIsResponding(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      const response = await fetch(`${API_URL}/tickets/admin/${selectedTicket.id}/respond`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ message: responseText }),
+      });
 
-    setTickets((prev) =>
-      prev.map((t) =>
-        t.id === selectedTicket.id
-          ? {
-              ...t,
-              status: "in-progress" as const,
-              responses: [
-                ...t.responses,
-                {
-                  message: responseText,
-                  isAdmin: true,
-                  createdAt: new Date().toISOString(),
-                },
-              ],
-            }
-          : t
-      )
-    );
-
-    setSelectedTicket((prev) =>
-      prev
-        ? {
-            ...prev,
-            status: "in-progress",
-            responses: [
-              ...prev.responses,
-              {
-                message: responseText,
-                isAdmin: true,
-                createdAt: new Date().toISOString(),
-              },
-            ],
-          }
-        : null
-    );
-
-    setResponseText("");
-    setIsResponding(false);
-    toast({
-      title: "Response Sent",
-      description: "Your response has been sent to the customer.",
-    });
+      const data = await response.json();
+      if (data.success) {
+        setResponseText("");
+        toast({
+          title: "Response Sent",
+          description: "Your response has been sent to the customer.",
+        });
+        fetchTickets();
+        // Update selected ticket with new response
+        setSelectedTicket((prev) =>
+          prev && data.ticket
+            ? {
+                ...prev,
+                status: data.ticket.status,
+                responses: data.ticket.responses,
+              }
+            : prev
+        );
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send response",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResponding(false);
+    }
   };
 
   const stats = {
