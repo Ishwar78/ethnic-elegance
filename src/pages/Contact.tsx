@@ -133,55 +133,60 @@ export default function Contact() {
                   </p>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <Phone className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Phone</h3>
-                      <p className="text-muted-foreground">+91 98765 43210</p>
-                      <p className="text-sm text-muted-foreground">Mon-Sat, 10am-7pm IST</p>
-                    </div>
+                {isLoadingContact ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <span className="ml-2 text-muted-foreground">Loading contact info...</span>
                   </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Phone className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">Phone</h3>
+                        <p className="text-muted-foreground">{contactInfo.phone}</p>
+                        <p className="text-sm text-muted-foreground">Mon-Sat, 10am-7pm IST</p>
+                      </div>
+                    </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <Mail className="h-5 w-5 text-primary" />
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Mail className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">Email</h3>
+                        <p className="text-muted-foreground">{contactInfo.email}</p>
+                        <p className="text-sm text-muted-foreground">We reply within 24 hours</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Email</h3>
-                      <p className="text-muted-foreground">support@vasstra.com</p>
-                      <p className="text-sm text-muted-foreground">We reply within 24 hours</p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <MapPin className="h-5 w-5 text-primary" />
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <MapPin className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">Address</h3>
+                        <p className="text-muted-foreground whitespace-pre-wrap">
+                          {contactInfo.address}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Address</h3>
-                      <p className="text-muted-foreground">
-                        123 Fashion Street, Textile Hub<br />
-                        Mumbai, Maharashtra 400001
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <Clock className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Business Hours</h3>
-                      <p className="text-muted-foreground">
-                        Monday - Saturday: 10:00 AM - 7:00 PM<br />
-                        Sunday: Closed
-                      </p>
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Clock className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">Business Hours</h3>
+                        <p className="text-muted-foreground whitespace-pre-wrap">
+                          {contactInfo.businessHours}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* WhatsApp CTA */}
                 <div className="bg-green-500/10 rounded-xl p-6 border border-green-500/20">
