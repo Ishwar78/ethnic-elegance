@@ -42,7 +42,12 @@ const statusColors: Record<string, string> = {
 
 export default function SupportTicketForm() {
   const { toast } = useToast();
+  const { token } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
+  const [responseText, setResponseText] = useState("");
+  const [isResponding, setIsResponding] = useState(false);
   const [formData, setFormData] = useState({
     subject: "",
     category: "",
@@ -50,16 +55,36 @@ export default function SupportTicketForm() {
     message: "",
   });
 
-  const [tickets, setTickets] = useState<SupportTicket[]>([
-    {
-      id: "TKT001",
-      subject: "Order not delivered",
-      category: "order",
-      status: "in-progress",
-      createdAt: new Date(Date.now() - 86400000).toISOString(),
-      message: "My order #VAS12345 has not been delivered yet.",
-    },
-  ]);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  // Fetch user's tickets
+  useEffect(() => {
+    if (token) {
+      fetchTickets();
+    }
+  }, [token]);
+
+  const fetchTickets = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/tickets/my`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setTickets(data.tickets);
+      }
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,25 +98,75 @@ export default function SupportTicketForm() {
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch(`${API_URL}/tickets`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
 
-    const newTicket: SupportTicket = {
-      id: `TKT${Date.now().toString().slice(-6)}`,
-      subject: formData.subject,
-      category: formData.category,
-      status: "open",
-      createdAt: new Date().toISOString(),
-      message: formData.message,
-    };
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: "Ticket Created",
+          description: `Your support ticket has been submitted.`,
+        });
+        setFormData({ subject: "", category: "", orderId: "", message: "" });
+        fetchTickets();
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to create ticket",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit ticket",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    setTickets((prev) => [newTicket, ...prev]);
-    setFormData({ subject: "", category: "", orderId: "", message: "" });
-    
-    toast({
-      title: "Ticket Created",
-      description: `Your support ticket #${newTicket.id} has been submitted.`,
-    });
-    setIsSubmitting(false);
+  const handleAddResponse = async () => {
+    if (!selectedTicket || !responseText.trim()) return;
+
+    setIsResponding(true);
+    try {
+      const response = await fetch(`${API_URL}/tickets/${selectedTicket._id}/respond`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ message: responseText }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setSelectedTicket(data.ticket);
+        setResponseText("");
+        fetchTickets();
+        toast({
+          title: "Success",
+          description: "Your response has been added.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add response",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResponding(false);
+    }
   };
 
   return (
