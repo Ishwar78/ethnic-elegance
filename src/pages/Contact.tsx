@@ -47,10 +47,19 @@ export default function Contact() {
   const fetchContactInfo = async () => {
     try {
       setIsLoadingContact(true);
-      const response = await fetch(`${API_URL}/admin/contact/public`);
+      const contactUrl = `${API_URL}/admin/contact/public`;
+      console.log('Fetching contact from:', contactUrl);
+
+      const response = await fetch(contactUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch contact information');
+        console.error('Contact fetch failed with status:', response.status);
+        throw new Error(`Failed to fetch contact information: ${response.status}`);
       }
 
       const data = await response.json();
@@ -65,7 +74,7 @@ export default function Contact() {
       }
     } catch (error) {
       console.error('Error fetching contact info:', error);
-      // Use default values if fetch fails
+      // Use default values if fetch fails - not showing error to user since we have defaults
     } finally {
       setIsLoadingContact(false);
     }
