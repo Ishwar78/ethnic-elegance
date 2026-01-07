@@ -141,6 +141,7 @@ mongoose.connect(MONGODB_URI)
     console.log('✅ MongoDB connected successfully!');
     await initializeAdminUser();
     await initializeContact();
+    await initializeHeroMedia();
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
