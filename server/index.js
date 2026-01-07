@@ -184,6 +184,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/hero-media', heroMediaRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/categories', categoriesRoutes);
+app.use('/api/tickets', ticketsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
