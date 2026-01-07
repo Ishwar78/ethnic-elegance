@@ -305,27 +305,36 @@ export default function Shop() {
                 </div>
 
                 {/* Products */}
-                <div className={cn(
-                  "grid gap-4 md:gap-6",
-                  gridCols === 3 ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-                )}>
-                  {sortedProducts.map((product, index) => (
-                    <ProductCard key={product.id} product={product} index={index} />
-                  ))}
-                </div>
-
-                {sortedProducts.length === 0 && (
-                  <div className="text-center py-16">
-                    <p className="text-muted-foreground text-lg">No products found matching your criteria.</p>
-                    <Button variant="outline" className="mt-4" onClick={() => {
-                      setPriceRange([0, 20000]);
-                      setSelectedCategory("All");
-                      setSelectedSizes([]);
-                      setSelectedColors([]);
-                    }}>
-                      Clear Filters
-                    </Button>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-16">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="ml-2 text-muted-foreground">Loading products...</span>
                   </div>
+                ) : (
+                  <>
+                    <div className={cn(
+                      "grid gap-4 md:gap-6",
+                      gridCols === 3 ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                    )}>
+                      {sortedProducts.map((product, index) => (
+                        <ProductCard key={product.id} product={product} index={index} />
+                      ))}
+                    </div>
+
+                    {sortedProducts.length === 0 && (
+                      <div className="text-center py-16">
+                        <p className="text-muted-foreground text-lg">No products found matching your criteria.</p>
+                        <Button variant="outline" className="mt-4" onClick={() => {
+                          setPriceRange([0, 20000]);
+                          setSelectedCategory("All");
+                          setSelectedSizes([]);
+                          setSelectedColors([]);
+                        }}>
+                          Clear Filters
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
