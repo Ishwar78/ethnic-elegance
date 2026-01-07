@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { Phone, Mail, MapPin, Clock, Save } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Phone, Mail, MapPin, Clock, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ContactDetails {
   phone: string;
@@ -17,7 +18,9 @@ interface ContactDetails {
 
 export default function AdminContactManagement() {
   const { toast } = useToast();
+  const { token } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [contactDetails, setContactDetails] = useState<ContactDetails>({
     phone: "+91 98765 43210",
     email: "support@vasstra.com",
@@ -25,6 +28,48 @@ export default function AdminContactManagement() {
     businessHours: "Monday - Saturday: 10:00 AM - 7:00 PM\nSunday: Closed",
     whatsapp: "919876543210",
   });
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  // Fetch contact details on mount
+  useEffect(() => {
+    fetchContactDetails();
+  }, [token]);
+
+  const fetchContactDetails = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/admin/contact`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch contact details');
+      }
+
+      const data = await response.json();
+      if (data.contact) {
+        setContactDetails({
+          phone: data.contact.phone || "+91 98765 43210",
+          email: data.contact.email || "support@vasstra.com",
+          address: data.contact.address || "123 Fashion Street, Textile Hub\nMumbai, Maharashtra 400001",
+          businessHours: data.contact.businessHours || "Monday - Saturday: 10:00 AM - 7:00 PM\nSunday: Closed",
+          whatsapp: data.contact.whatsapp || "919876543210",
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching contact details:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load contact details",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (field: keyof ContactDetails, value: string) => {
     setContactDetails((prev) => ({
@@ -34,15 +79,44 @@ export default function AdminContactManagement() {
   };
 
   const handleSave = async () => {
+    if (!contactDetails.phone || !contactDetails.email || !contactDetails.address) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSaving(true);
-    // Simulate saving
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    toast({
-      title: "Contact Details Updated",
-      description: "Your contact information has been saved successfully.",
-    });
-    setIsSaving(false);
+    try {
+      const response = await fetch(`${API_URL}/admin/contact`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(contactDetails),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update contact details');
+      }
+
+      toast({
+        title: "Success",
+        description: "Your contact information has been saved successfully.",
+      });
+    } catch (error) {
+      console.error('Error saving contact details:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save contact details",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
