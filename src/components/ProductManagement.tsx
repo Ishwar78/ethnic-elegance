@@ -315,7 +315,7 @@ export default function ProductManagement() {
                 <span className="text-green-600 font-bold text-sm">E</span>
               </div>
               <div>
-                <p className="text-2xl font-bold">{products.filter((p) => p.isEthnic).length}</p>
+                <p className="text-2xl font-bold">{products.filter((p) => p.category === "ethnic_wear").length}</p>
                 <p className="text-xs text-muted-foreground">Ethnic Wear</p>
               </div>
             </div>
@@ -328,7 +328,7 @@ export default function ProductManagement() {
                 <span className="text-blue-600 font-bold text-sm">W</span>
               </div>
               <div>
-                <p className="text-2xl font-bold">{products.filter((p) => p.isWestern).length}</p>
+                <p className="text-2xl font-bold">{products.filter((p) => p.category === "western_wear").length}</p>
                 <p className="text-xs text-muted-foreground">Western Wear</p>
               </div>
             </div>
