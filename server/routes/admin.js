@@ -7,7 +7,28 @@ import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
-// Apply auth middleware to all admin routes
+// Public endpoint - Get contact information (no authentication required)
+router.get('/contact/public', async (req, res) => {
+  try {
+    let contact = await Contact.findOne();
+
+    // If no contact exists, create one with defaults
+    if (!contact) {
+      contact = new Contact();
+      await contact.save();
+    }
+
+    res.json({
+      success: true,
+      contact
+    });
+  } catch (error) {
+    console.error('Get contact error:', error);
+    res.status(500).json({ error: 'Failed to fetch contact information' });
+  }
+});
+
+// Apply auth middleware to all subsequent admin routes
 router.use(authMiddleware, adminMiddleware);
 
 // Get all users
