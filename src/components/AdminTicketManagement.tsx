@@ -263,7 +263,13 @@ export default function AdminTicketManagement() {
 
       {/* Tickets List */}
       <div className="space-y-4">
-        {filteredTickets.length === 0 ? (
+        {isLoading ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground">Loading tickets...</p>
+            </CardContent>
+          </Card>
+        ) : filteredTickets.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
