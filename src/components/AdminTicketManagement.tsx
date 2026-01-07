@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Ticket, Send, AlertCircle, HelpCircle, Package, CreditCard, Clock, CheckCircle, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SupportTicket {
   id: string;
@@ -43,129 +44,134 @@ const priorityColors: Record<string, string> = {
 
 export default function AdminTicketManagement() {
   const { toast } = useToast();
+  const { token } = useAuth();
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [responseText, setResponseText] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [isResponding, setIsResponding] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
 
-  const [tickets, setTickets] = useState<SupportTicket[]>([
-    {
-      id: "TKT001",
-      userId: "user1",
-      userName: "Priya Sharma",
-      userEmail: "priya@example.com",
-      subject: "Order not delivered",
-      category: "order",
-      status: "open",
-      priority: "high",
-      createdAt: new Date(Date.now() - 86400000).toISOString(),
-      message: "My order #VAS12345 was supposed to arrive yesterday but I haven't received it yet. Please help!",
-      responses: [],
-    },
-    {
-      id: "TKT002",
-      userId: "user2",
-      userName: "Rahul Verma",
-      userEmail: "rahul@example.com",
-      subject: "Payment failed but amount deducted",
-      category: "payment",
-      status: "in-progress",
-      priority: "high",
-      createdAt: new Date(Date.now() - 172800000).toISOString(),
-      message: "I tried to place an order but payment failed. However, ₹2,999 was deducted from my account.",
-      responses: [
-        {
-          message: "Hi Rahul, we're looking into this issue. Can you please share your transaction ID?",
-          isAdmin: true,
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  // Fetch tickets from API
+  useEffect(() => {
+    if (token) {
+      fetchTickets();
+    }
+  }, [token]);
+
+  const fetchTickets = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/tickets/admin/all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
         },
-      ],
-    },
-    {
-      id: "TKT003",
-      userId: "user3",
-      userName: "Anita Desai",
-      userEmail: "anita@example.com",
-      subject: "Size exchange request",
-      category: "general",
-      status: "resolved",
-      priority: "low",
-      createdAt: new Date(Date.now() - 259200000).toISOString(),
-      message: "I received my kurta set but the size is slightly big. Can I exchange it for a smaller size?",
-      responses: [
-        {
-          message: "Of course! Please visit our returns page to initiate an exchange. Use code EXCHANGE10 for free exchange.",
-          isAdmin: true,
-          createdAt: new Date(Date.now() - 172800000).toISOString(),
-        },
-      ],
-    },
-  ]);
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setTickets(data.tickets.map((ticket: any) => ({
+          id: ticket._id,
+          userId: ticket.userId?._id,
+          userName: ticket.userId?.name || 'Unknown',
+          userEmail: ticket.userId?.email || 'Unknown',
+          subject: ticket.subject,
+          category: ticket.category,
+          status: ticket.status,
+          priority: ticket.priority || 'medium',
+          createdAt: ticket.createdAt,
+          message: ticket.message,
+          responses: ticket.responses || [],
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch support tickets',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredTickets = filterStatus === "all" 
     ? tickets 
     : tickets.filter((t) => t.status === filterStatus);
 
-  const handleStatusChange = (ticketId: string, newStatus: string) => {
-    setTickets((prev) =>
-      prev.map((t) =>
-        t.id === ticketId ? { ...t, status: newStatus as SupportTicket["status"] } : t
-      )
-    );
-    toast({
-      title: "Status Updated",
-      description: `Ticket #${ticketId} status changed to ${newStatus}`,
-    });
+  const handleStatusChange = async (ticketId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`${API_URL}/tickets/admin/${ticketId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: "Status Updated",
+          description: `Ticket status changed to ${newStatus}`,
+        });
+        fetchTickets();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update ticket status",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSendResponse = async () => {
     if (!selectedTicket || !responseText.trim()) return;
 
     setIsResponding(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      const response = await fetch(`${API_URL}/tickets/admin/${selectedTicket.id}/respond`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ message: responseText }),
+      });
 
-    setTickets((prev) =>
-      prev.map((t) =>
-        t.id === selectedTicket.id
-          ? {
-              ...t,
-              status: "in-progress" as const,
-              responses: [
-                ...t.responses,
-                {
-                  message: responseText,
-                  isAdmin: true,
-                  createdAt: new Date().toISOString(),
-                },
-              ],
-            }
-          : t
-      )
-    );
-
-    setSelectedTicket((prev) =>
-      prev
-        ? {
-            ...prev,
-            status: "in-progress",
-            responses: [
-              ...prev.responses,
-              {
-                message: responseText,
-                isAdmin: true,
-                createdAt: new Date().toISOString(),
-              },
-            ],
-          }
-        : null
-    );
-
-    setResponseText("");
-    setIsResponding(false);
-    toast({
-      title: "Response Sent",
-      description: "Your response has been sent to the customer.",
-    });
+      const data = await response.json();
+      if (data.success) {
+        setResponseText("");
+        toast({
+          title: "Response Sent",
+          description: "Your response has been sent to the customer.",
+        });
+        fetchTickets();
+        // Update selected ticket with new response
+        setSelectedTicket((prev) =>
+          prev && data.ticket
+            ? {
+                ...prev,
+                status: data.ticket.status,
+                responses: data.ticket.responses,
+              }
+            : prev
+        );
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send response",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResponding(false);
+    }
   };
 
   const stats = {
@@ -257,7 +263,13 @@ export default function AdminTicketManagement() {
 
       {/* Tickets List */}
       <div className="space-y-4">
-        {filteredTickets.length === 0 ? (
+        {isLoading ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground">Loading tickets...</p>
+            </CardContent>
+          </Card>
+        ) : filteredTickets.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

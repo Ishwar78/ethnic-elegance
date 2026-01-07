@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Package, ShoppingCart, BarChart3, Search, Trash2 } from "lucide-react";
+import { Users, User, Package, ShoppingCart, BarChart3, Search, Trash2, MapPin, Phone, Mail } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import ProductManagement from "@/components/ProductManagement";
 import AdminContactManagement from "@/components/AdminContactManagement";
 import AdminTicketManagement from "@/components/AdminTicketManagement";
@@ -59,6 +60,7 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [showUserForm, setShowUserForm] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -222,7 +224,10 @@ export default function AdminDashboard() {
             <p className="text-muted-foreground">Manage users, orders, and view statistics</p>
           </div>
 
-          <Tabs defaultValue={defaultTab} className="space-y-6">
+          <Tabs defaultValue={defaultTab} className="space-y-6" onValueChange={(value) => {
+            if (value === 'users') fetchUsers();
+            if (value === 'orders') fetchOrders();
+          }}>
             <TabsList className="flex flex-wrap gap-1">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="hero-media">Hero Slider</TabsTrigger>
@@ -408,53 +413,65 @@ export default function AdminDashboard() {
                 {isLoading ? 'Loading...' : 'Refresh Orders'}
               </Button>
 
-              <div className="border rounded-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-muted">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Customer</th>
-                        <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Amount</th>
-                        <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Status</th>
-                        <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {orders.map((order) => (
-                        <tr key={order._id} className="hover:bg-muted/50">
-                          <td className="px-6 py-4">
-                            <div>
-                              <p className="text-sm font-medium text-foreground">{order.userId.name}</p>
-                              <p className="text-xs text-muted-foreground">{order.userId.email}</p>
+              <div className="space-y-4">
+                {orders.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No orders found.</p>
+                  </div>
+                ) : (
+                  orders.map((order) => (
+                    <Card key={order._id} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setSelectedOrder(order)}>
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div>
+                                <h4 className="font-semibold text-foreground">{order.userId?.name}</h4>
+                                <p className="text-sm text-muted-foreground">{order.userId?.email}</p>
+                              </div>
                             </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium text-foreground">₹{order.totalAmount}</td>
-                          <td className="px-6 py-4 text-sm">
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              order.status === 'delivered'
-                                ? 'bg-green-100 text-green-800'
-                                : order.status === 'cancelled'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-blue-100 text-blue-800'
-                            }`}>
-                              {order.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-muted-foreground">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                            <div className="grid grid-cols-4 gap-4 text-sm mt-3">
+                              <div>
+                                <p className="text-muted-foreground">Amount</p>
+                                <p className="font-medium">₹{order.totalAmount?.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Items</p>
+                                <p className="font-medium">{order.items?.length || 0}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Status</p>
+                                <span className={`px-2 py-1 rounded text-xs font-medium inline-block mt-1 ${
+                                  order.status === 'delivered'
+                                    ? 'bg-green-100 text-green-800'
+                                    : order.status === 'cancelled'
+                                    ? 'bg-red-100 text-red-800'
+                                    : order.status === 'shipped'
+                                    ? 'bg-purple-100 text-purple-800'
+                                    : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {order.status}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Date</p>
+                                <p className="font-medium">{new Date(order.createdAt).toLocaleDateString()}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedOrder(order);
+                          }}>
+                            View Details
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
               </div>
-
-              {orders.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  No orders found.
-                </div>
-              )}
             </TabsContent>
 
             {/* Tickets Tab */}
@@ -497,6 +514,158 @@ export default function AdminDashboard() {
           </Tabs>
         </main>
       </div>
+
+      {/* Order Details Dialog */}
+      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          {selectedOrder && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Order Details</DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* Customer Info */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">Customer Information</h3>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-muted-foreground">Name</p>
+                          <p className="font-medium">{selectedOrder.userId?.name}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground mt-1" />
+                        <div>
+                          <p className="text-muted-foreground">Email</p>
+                          <p className="font-medium break-all">{selectedOrder.userId?.email}</p>
+                        </div>
+                      </div>
+                      {selectedOrder.userId?.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <p className="text-muted-foreground">Phone</p>
+                            <p className="font-medium">{selectedOrder.userId?.phone}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Shipping Address */}
+                  {selectedOrder.shippingAddress && (
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-3">Shipping Address</h3>
+                      <div className="space-y-2 text-sm">
+                        {selectedOrder.shippingAddress.name && (
+                          <p className="font-medium">{selectedOrder.shippingAddress.name}</p>
+                        )}
+                        {selectedOrder.shippingAddress.street && (
+                          <p className="text-muted-foreground">{selectedOrder.shippingAddress.street}</p>
+                        )}
+                        <p className="text-muted-foreground">
+                          {selectedOrder.shippingAddress.city && `${selectedOrder.shippingAddress.city}, `}
+                          {selectedOrder.shippingAddress.state && `${selectedOrder.shippingAddress.state} `}
+                          {selectedOrder.shippingAddress.zipCode}
+                        </p>
+                        {selectedOrder.shippingAddress.country && (
+                          <p className="text-muted-foreground">{selectedOrder.shippingAddress.country}</p>
+                        )}
+                        {selectedOrder.shippingAddress.phone && (
+                          <p className="text-muted-foreground">Phone: {selectedOrder.shippingAddress.phone}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Order Summary */}
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <div className="grid grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Order Date</p>
+                      <p className="font-medium">{new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Status</p>
+                      <span className={`px-2 py-1 rounded text-xs font-medium inline-block mt-1 ${
+                        selectedOrder.status === 'delivered'
+                          ? 'bg-green-100 text-green-800'
+                          : selectedOrder.status === 'cancelled'
+                          ? 'bg-red-100 text-red-800'
+                          : selectedOrder.status === 'shipped'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Payment</p>
+                      <p className="font-medium capitalize">{selectedOrder.paymentMethod?.replace('_', ' ')}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Total Amount</p>
+                      <p className="font-semibold text-lg">₹{selectedOrder.totalAmount?.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Order Items */}
+                <div>
+                  <h3 className="font-semibold text-foreground mb-3">Order Items</h3>
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-muted">
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-foreground">Product</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-foreground">Price</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-foreground">Qty</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-foreground">Size</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-foreground">Color</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-foreground">Subtotal</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {selectedOrder.items?.map((item: any, index: number) => (
+                          <tr key={index} className="hover:bg-muted/30">
+                            <td className="px-4 py-3 text-sm text-foreground">{item.name}</td>
+                            <td className="px-4 py-3 text-sm text-foreground">₹{item.price?.toLocaleString()}</td>
+                            <td className="px-4 py-3 text-sm text-foreground">{item.quantity}</td>
+                            <td className="px-4 py-3 text-sm text-muted-foreground">{item.size || '-'}</td>
+                            <td className="px-4 py-3 text-sm text-muted-foreground">{item.color || '-'}</td>
+                            <td className="px-4 py-3 text-sm text-right text-foreground font-medium">
+                              ₹{((item.price || 0) * (item.quantity || 0)).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Additional Notes */}
+                {selectedOrder.notes && (
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-2">Order Notes</h3>
+                    <p className="text-sm text-muted-foreground">{selectedOrder.notes}</p>
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSelectedOrder(null)}>
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

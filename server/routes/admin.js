@@ -229,7 +229,7 @@ router.get('/orders', async (req, res) => {
     const query = status ? { status } : {};
 
     const orders = await Order.find(query)
-      .populate('userId', 'name email')
+      .populate('userId', 'name email phone address')
       .skip(skip)
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });

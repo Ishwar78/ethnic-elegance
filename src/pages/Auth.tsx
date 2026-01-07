@@ -86,9 +86,9 @@ export default function Auth() {
         if (result.success) {
           toast({
             title: "Account created!",
-            description: "Welcome to Vasstra. Start exploring our collection.",
+            description: "Welcome to Vasstra. Opening your dashboard...",
           });
-          navigate("/");
+          navigate("/dashboard?tab=profile");
         } else {
           toast({
             title: "Signup failed",
