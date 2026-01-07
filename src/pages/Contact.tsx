@@ -47,13 +47,14 @@ export default function Contact() {
   const fetchContactInfo = async () => {
     try {
       setIsLoadingContact(true);
-      const contactUrl = `${API_URL}/admin/contact/public`;
+      const contactUrl = `${API_URL}/contact`;
       console.log('Fetching contact from:', contactUrl);
 
       const response = await fetch(contactUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
       });
 
