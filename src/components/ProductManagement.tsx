@@ -355,77 +355,86 @@ export default function ProductManagement() {
           <CardTitle>Products ({filteredProducts.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Product</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Category</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Price</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Tags</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-muted/50">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-12 h-12 rounded-lg object-cover"
-                        />
-                        <div>
-                          <p className="font-medium text-sm text-foreground">{product.name}</p>
-                          <p className="text-xs text-muted-foreground">{product.subcategory}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{product.category}</td>
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="font-medium text-foreground">₹{product.price.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground line-through">
-                          ₹{product.originalPrice.toLocaleString()}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {product.isNew && (
-                          <Badge variant="secondary" className="text-xs">New</Badge>
-                        )}
-                        {product.isBestseller && (
-                          <Badge variant="default" className="text-xs">Bestseller</Badge>
-                        )}
-                        {product.isSummer && (
-                          <Badge variant="outline" className="text-xs">Summer</Badge>
-                        )}
-                        {product.isWinter && (
-                          <Badge variant="outline" className="text-xs">Winter</Badge>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(product)}>
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(product)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-2 text-muted-foreground">Loading products...</span>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Product</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Category</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Price</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Tags</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredProducts.map((product) => (
+                    <tr key={product._id || product.id} className="hover:bg-muted/50">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-12 h-12 rounded-lg object-cover"
+                          />
+                          <div>
+                            <p className="font-medium text-sm text-foreground">{product.name}</p>
+                            <p className="text-xs text-muted-foreground">{product.subcategory}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {categoryLabels[product.category] || product.category}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div>
+                          <p className="font-medium text-foreground">₹{product.price.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground line-through">
+                            ₹{product.originalPrice.toLocaleString()}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {product.isNew && (
+                            <Badge variant="secondary" className="text-xs">New</Badge>
+                          )}
+                          {product.isBestseller && (
+                            <Badge variant="default" className="text-xs">Bestseller</Badge>
+                          )}
+                          {product.isSummer && (
+                            <Badge variant="outline" className="text-xs">Summer</Badge>
+                          )}
+                          {product.isWinter && (
+                            <Badge variant="outline" className="text-xs">Winter</Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(product)}>
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleDelete(product)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No products found.
+              {filteredProducts.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No products found.
+                </div>
+              )}
             </div>
           )}
         </CardContent>
