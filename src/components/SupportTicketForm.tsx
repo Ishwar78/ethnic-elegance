@@ -242,10 +242,16 @@ export default function SupportTicketForm() {
         </CardContent>
       </Card>
 
-      {/* Existing Tickets */}
+      {/* Your Tickets */}
       <div>
         <h3 className="text-xl font-semibold mb-4">Your Tickets</h3>
-        {tickets.length === 0 ? (
+        {isLoading ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground">Loading tickets...</p>
+            </CardContent>
+          </Card>
+        ) : tickets.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -257,16 +263,16 @@ export default function SupportTicketForm() {
             {tickets.map((ticket) => {
               const IconComponent = categoryIcons[ticket.category] || HelpCircle;
               return (
-                <Card key={ticket.id}>
+                <Card key={ticket._id} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setSelectedTicket(ticket)}>
                   <CardContent className="py-4">
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 flex-1">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                           <IconComponent className="h-5 w-5 text-primary" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium">#{ticket.id}</span>
+                            <span className="font-medium text-sm">#{ticket._id?.slice(-6).toUpperCase()}</span>
                             <Badge variant="outline" className={statusColors[ticket.status]}>
                               {ticket.status.replace("-", " ")}
                             </Badge>
@@ -275,6 +281,12 @@ export default function SupportTicketForm() {
                           <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                             {ticket.message}
                           </p>
+                          {ticket.responses.length > 0 && (
+                            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                              <MessageSquare className="h-3 w-3" />
+                              {ticket.responses.length} response(s)
+                            </p>
+                          )}
                         </div>
                       </div>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -288,6 +300,97 @@ export default function SupportTicketForm() {
           </div>
         )}
       </div>
+
+      {/* Ticket Detail Dialog */}
+      <Dialog open={!!selectedTicket} onOpenChange={() => setSelectedTicket(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          {selectedTicket && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  Ticket #{selectedTicket._id?.slice(-6).toUpperCase()}
+                  <Badge variant="outline" className={statusColors[selectedTicket.status]}>
+                    {selectedTicket.status.replace("-", " ")}
+                  </Badge>
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                {/* Ticket Info */}
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Subject</p>
+                      <p className="font-medium">{selectedTicket.subject}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Category</p>
+                      <p className="font-medium capitalize">{selectedTicket.category}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Message</p>
+                      <p className="font-medium">{selectedTicket.message}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(selectedTicket.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Conversation */}
+                {selectedTicket.responses.length > 0 && (
+                  <div className="border-t pt-4">
+                    <h5 className="font-medium mb-3">Responses</h5>
+                    <div className="space-y-3">
+                      {selectedTicket.responses.map((response, index) => (
+                        <div
+                          key={index}
+                          className={`p-3 rounded-lg ${
+                            response.isAdmin
+                              ? "bg-primary/10 ml-8"
+                              : "bg-muted/30 mr-8"
+                          }`}
+                        >
+                          <p className="text-sm">{response.message}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {response.isAdmin ? "Admin Support" : "You"} • {new Date(response.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Add Response */}
+                <div className="border-t pt-4">
+                  <h5 className="font-medium mb-2">Add a Response</h5>
+                  <Textarea
+                    value={responseText}
+                    onChange={(e) => setResponseText(e.target.value)}
+                    placeholder="Type your response..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSelectedTicket(null)}>
+                  Close
+                </Button>
+                <Button
+                  onClick={handleAddResponse}
+                  disabled={!responseText.trim() || isResponding}
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  {isResponding ? "Sending..." : "Send Response"}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
