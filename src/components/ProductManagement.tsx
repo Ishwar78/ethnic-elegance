@@ -559,10 +559,11 @@ export default function ProductManagement() {
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
                 Cancel
               </Button>
-              <Button onClick={handleSave}>
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {isAddMode ? "Add Product" : "Save Changes"}
               </Button>
             </div>
