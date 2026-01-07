@@ -486,8 +486,8 @@ export default function ProductManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Ethnic Wear">Ethnic Wear</SelectItem>
-                    <SelectItem value="Western Wear">Western Wear</SelectItem>
+                    <SelectItem value="ethnic_wear">Ethnic Wear</SelectItem>
+                    <SelectItem value="western_wear">Western Wear</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
