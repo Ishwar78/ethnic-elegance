@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,25 +6,27 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash2, FolderTree, Layers } from "lucide-react";
+import { Plus, Edit, Trash2, FolderTree, Layers, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Category {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
   slug: string;
   description: string;
@@ -35,66 +37,12 @@ interface Category {
   createdAt: string;
 }
 
-const initialCategories: Category[] = [
-  {
-    id: "1",
-    name: "Ethnic Wear",
-    slug: "ethnic-wear",
-    description: "Traditional Indian ethnic clothing",
-    parentId: null,
-    image: "",
-    isActive: true,
-    productCount: 45,
-    createdAt: "2024-01-15"
-  },
-  {
-    id: "2",
-    name: "Western Wear",
-    slug: "western-wear",
-    description: "Modern western fashion clothing",
-    parentId: null,
-    image: "",
-    isActive: true,
-    productCount: 38,
-    createdAt: "2024-01-15"
-  },
-  {
-    id: "3",
-    name: "Kurta Sets",
-    slug: "kurta-sets",
-    description: "Traditional kurta with bottom wear",
-    parentId: "1",
-    image: "",
-    isActive: true,
-    productCount: 15,
-    createdAt: "2024-01-20"
-  },
-  {
-    id: "4",
-    name: "Lehengas",
-    slug: "lehengas",
-    description: "Bridal and party wear lehengas",
-    parentId: "1",
-    image: "",
-    isActive: true,
-    productCount: 12,
-    createdAt: "2024-01-20"
-  },
-  {
-    id: "5",
-    name: "Dresses",
-    slug: "dresses",
-    description: "Casual and formal dresses",
-    parentId: "2",
-    image: "",
-    isActive: true,
-    productCount: 20,
-    createdAt: "2024-01-22"
-  }
-];
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const AdminCategoryManagement = () => {
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const { token } = useAuth();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({
