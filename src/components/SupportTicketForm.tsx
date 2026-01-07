@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Send, Ticket, AlertCircle, HelpCircle, Package, CreditCard } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Send, Ticket, AlertCircle, HelpCircle, Package, CreditCard, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,15 +7,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface TicketResponse {
+  message: string;
+  isAdmin: boolean;
+  createdAt: string;
+}
 
 interface SupportTicket {
-  id: string;
+  _id: string;
   subject: string;
   category: string;
   status: "open" | "in-progress" | "resolved";
   createdAt: string;
   message: string;
+  responses: TicketResponse[];
 }
 
 const categoryIcons: Record<string, React.ElementType> = {
