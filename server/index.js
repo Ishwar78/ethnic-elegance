@@ -83,6 +83,59 @@ async function initializeContact() {
   }
 }
 
+// Function to initialize default hero media
+async function initializeHeroMedia() {
+  try {
+    const existingMedia = await HeroMedia.countDocuments();
+
+    if (existingMedia === 0) {
+      console.log('🔄 Creating default hero media...');
+      const defaultMedia = [
+        {
+          title: 'New Arrivals',
+          subtitle: 'Festive Suit Collection',
+          description: 'Discover exquisite handcrafted ethnic wear for every occasion',
+          mediaUrl: 'https://images.unsplash.com/photo-1610706406159-b21bd25c5e9c?w=1200&q=80',
+          mediaType: 'image',
+          cta: 'Shop Now',
+          ctaLink: '/shop?category=new-arrivals',
+          order: 0,
+          isActive: true,
+        },
+        {
+          title: 'Exclusive',
+          subtitle: 'Royal Lehenga Collection',
+          description: 'Timeless elegance meets contemporary design',
+          mediaUrl: 'https://images.unsplash.com/photo-1610706406159-b21bd25c5e9c?w=1200&q=80',
+          mediaType: 'image',
+          cta: 'Explore Collection',
+          ctaLink: '/shop?category=lehengas',
+          order: 1,
+          isActive: true,
+        },
+        {
+          title: 'Bridal Edit',
+          subtitle: 'Wedding Season Special',
+          description: 'Make your special day unforgettable',
+          mediaUrl: 'https://images.unsplash.com/photo-1610706406159-b21bd25c5e9c?w=1200&q=80',
+          mediaType: 'image',
+          cta: 'View Collection',
+          ctaLink: '/shop?category=bridal',
+          order: 2,
+          isActive: true,
+        },
+      ];
+
+      await HeroMedia.insertMany(defaultMedia);
+      console.log('✅ Default hero media initialized successfully!');
+    } else {
+      console.log('✅ Hero media already exists!');
+    }
+  } catch (error) {
+    console.error('❌ Error initializing hero media:', error);
+  }
+}
+
 mongoose.connect(MONGODB_URI)
   .then(async () => {
     console.log('✅ MongoDB connected successfully!');
