@@ -411,53 +411,65 @@ export default function AdminDashboard() {
                 {isLoading ? 'Loading...' : 'Refresh Orders'}
               </Button>
 
-              <div className="border rounded-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-muted">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Customer</th>
-                        <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Amount</th>
-                        <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Status</th>
-                        <th className="px-6 py-3 text-left text-sm font-medium text-foreground">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {orders.map((order) => (
-                        <tr key={order._id} className="hover:bg-muted/50">
-                          <td className="px-6 py-4">
-                            <div>
-                              <p className="text-sm font-medium text-foreground">{order.userId.name}</p>
-                              <p className="text-xs text-muted-foreground">{order.userId.email}</p>
+              <div className="space-y-4">
+                {orders.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No orders found.</p>
+                  </div>
+                ) : (
+                  orders.map((order) => (
+                    <Card key={order._id} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setSelectedOrder(order)}>
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div>
+                                <h4 className="font-semibold text-foreground">{order.userId?.name}</h4>
+                                <p className="text-sm text-muted-foreground">{order.userId?.email}</p>
+                              </div>
                             </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium text-foreground">₹{order.totalAmount}</td>
-                          <td className="px-6 py-4 text-sm">
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              order.status === 'delivered'
-                                ? 'bg-green-100 text-green-800'
-                                : order.status === 'cancelled'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-blue-100 text-blue-800'
-                            }`}>
-                              {order.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-muted-foreground">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                            <div className="grid grid-cols-4 gap-4 text-sm mt-3">
+                              <div>
+                                <p className="text-muted-foreground">Amount</p>
+                                <p className="font-medium">₹{order.totalAmount?.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Items</p>
+                                <p className="font-medium">{order.items?.length || 0}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Status</p>
+                                <span className={`px-2 py-1 rounded text-xs font-medium inline-block mt-1 ${
+                                  order.status === 'delivered'
+                                    ? 'bg-green-100 text-green-800'
+                                    : order.status === 'cancelled'
+                                    ? 'bg-red-100 text-red-800'
+                                    : order.status === 'shipped'
+                                    ? 'bg-purple-100 text-purple-800'
+                                    : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {order.status}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Date</p>
+                                <p className="font-medium">{new Date(order.createdAt).toLocaleDateString()}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedOrder(order);
+                          }}>
+                            View Details
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
               </div>
-
-              {orders.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  No orders found.
-                </div>
-              )}
             </TabsContent>
 
             {/* Tickets Tab */}
