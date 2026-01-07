@@ -11,6 +11,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Search, Plus, Edit2, Trash2, Package, Loader2 } from "lucide-react";
 
+const subcategories = {
+  ethnic_wear: ["Kurta Sets", "Anarkali Suits", "Lehengas", "Party Wear", "Festive Collection"],
+  western_wear: ["Tops & Tees", "Dresses", "Co-ord Sets", "Casual Wear"]
+};
+
 interface Product {
   _id?: string;
   id?: string;
