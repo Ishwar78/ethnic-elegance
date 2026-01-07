@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, Clock, Send, MessageCircle } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Send, MessageCircle, Loader2 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -10,8 +10,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
+interface ContactInfo {
+  phone: string;
+  email: string;
+  address: string;
+  businessHours: string;
+  whatsapp: string;
+}
+
 export default function Contact() {
   const { toast } = useToast();
+  const [contactInfo, setContactInfo] = useState<ContactInfo>({
+    phone: "+91 98765 43210",
+    email: "support@vasstra.com",
+    address: "123 Fashion Street, Textile Hub\nMumbai, Maharashtra 400001",
+    businessHours: "Monday - Saturday: 10:00 AM - 7:00 PM\nSunday: Closed",
+    whatsapp: "919876543210",
+  });
+  const [isLoadingContact, setIsLoadingContact] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20,6 +36,50 @@ export default function Contact() {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  // Fetch contact information on mount
+  useEffect(() => {
+    fetchContactInfo();
+  }, []);
+
+  const fetchContactInfo = async () => {
+    try {
+      setIsLoadingContact(true);
+      const contactUrl = `${API_URL}/contact`;
+      console.log('Fetching contact from:', contactUrl);
+
+      const response = await fetch(contactUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.error('Contact fetch failed with status:', response.status);
+        throw new Error(`Failed to fetch contact information: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.contact) {
+        setContactInfo({
+          phone: data.contact.phone || "+91 98765 43210",
+          email: data.contact.email || "support@vasstra.com",
+          address: data.contact.address || "123 Fashion Street, Textile Hub\nMumbai, Maharashtra 400001",
+          businessHours: data.contact.businessHours || "Monday - Saturday: 10:00 AM - 7:00 PM\nSunday: Closed",
+          whatsapp: data.contact.whatsapp || "919876543210",
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching contact info:', error);
+      // Use default values if fetch fails - not showing error to user since we have defaults
+    } finally {
+      setIsLoadingContact(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +98,7 @@ export default function Contact() {
   };
 
   const handleWhatsApp = () => {
-    window.open("https://wa.me/919876543210?text=Hi, I have a query about Vasstra products.", "_blank");
+    window.open(`https://wa.me/${contactInfo.whatsapp}?text=Hi, I have a query about Vasstra products.`, "_blank");
   };
 
   return (
@@ -83,55 +143,60 @@ export default function Contact() {
                   </p>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <Phone className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Phone</h3>
-                      <p className="text-muted-foreground">+91 98765 43210</p>
-                      <p className="text-sm text-muted-foreground">Mon-Sat, 10am-7pm IST</p>
-                    </div>
+                {isLoadingContact ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <span className="ml-2 text-muted-foreground">Loading contact info...</span>
                   </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Phone className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">Phone</h3>
+                        <p className="text-muted-foreground">{contactInfo.phone}</p>
+                        <p className="text-sm text-muted-foreground">Mon-Sat, 10am-7pm IST</p>
+                      </div>
+                    </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <Mail className="h-5 w-5 text-primary" />
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Mail className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">Email</h3>
+                        <p className="text-muted-foreground">{contactInfo.email}</p>
+                        <p className="text-sm text-muted-foreground">We reply within 24 hours</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Email</h3>
-                      <p className="text-muted-foreground">support@vasstra.com</p>
-                      <p className="text-sm text-muted-foreground">We reply within 24 hours</p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <MapPin className="h-5 w-5 text-primary" />
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <MapPin className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">Address</h3>
+                        <p className="text-muted-foreground whitespace-pre-wrap">
+                          {contactInfo.address}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Address</h3>
-                      <p className="text-muted-foreground">
-                        123 Fashion Street, Textile Hub<br />
-                        Mumbai, Maharashtra 400001
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <Clock className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Business Hours</h3>
-                      <p className="text-muted-foreground">
-                        Monday - Saturday: 10:00 AM - 7:00 PM<br />
-                        Sunday: Closed
-                      </p>
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Clock className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">Business Hours</h3>
+                        <p className="text-muted-foreground whitespace-pre-wrap">
+                          {contactInfo.businessHours}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* WhatsApp CTA */}
                 <div className="bg-green-500/10 rounded-xl p-6 border border-green-500/20">

@@ -354,26 +354,32 @@ export default function AdminHeroMediaManagement() {
               <CardContent className="pt-6">
                 <div className="flex gap-4">
                   {/* Media Preview */}
-                  <div className="w-32 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                    {item.mediaType === 'video' && (
+                  <div className="w-32 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
+                    {item.mediaType === 'video' ? (
                       <video
                         src={item.mediaUrl}
                         className="w-full h-full object-cover"
                         muted
+                        onError={(e) => {
+                          console.error('Video load error:', e);
+                          const target = e.currentTarget;
+                          target.style.display = 'none';
+                        }}
                       />
-                    )}
-                    {item.mediaType === 'gif' && (
+                    ) : (
                       <img
                         src={item.mediaUrl}
                         alt={item.title}
                         className="w-full h-full object-cover"
-                      />
-                    )}
-                    {item.mediaType === 'image' && (
-                      <img
-                        src={item.mediaUrl}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.style.display = 'none';
+                          // Show error text
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div class="text-xs text-muted-foreground text-center p-2">Preview unavailable</div>';
+                          }
+                        }}
                       />
                     )}
                   </div>

@@ -11,6 +11,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Search, Plus, Edit2, Trash2, Package, Loader2 } from "lucide-react";
 
+const subcategories = {
+  ethnic_wear: ["Kurta Sets", "Anarkali Suits", "Lehengas", "Party Wear", "Festive Collection"],
+  western_wear: ["Tops & Tees", "Dresses", "Co-ord Sets", "Casual Wear"]
+};
+
 interface Product {
   _id?: string;
   id?: string;
@@ -494,18 +499,18 @@ export default function ProductManagement() {
               <div className="space-y-2">
                 <Label>Subcategory</Label>
                 <Select
-                  value={formData.subcategory}
+                  value={formData.subcategory || ""}
                   onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select subcategory" />
                   </SelectTrigger>
                   <SelectContent>
-                    {subcategories[formData.category as keyof typeof subcategories]?.map((sub) => (
-                      <SelectItem key={sub} value={sub}>
+                    {formData.category && subcategories[formData.category as keyof typeof subcategories]?.map((sub) => (
+                      <SelectItem key={sub} value={sub || ""}>
                         {sub}
                       </SelectItem>
-                    ))}
+                    )) || null}
                   </SelectContent>
                 </Select>
               </div>

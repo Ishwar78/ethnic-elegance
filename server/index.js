@@ -9,6 +9,8 @@ import heroMediaRoutes from './routes/heroMedia.js';
 import productsRoutes from './routes/products.js';
 import categoriesRoutes from './routes/categories.js';
 import User from './models/User.js';
+import Contact from './models/Contact.js';
+import HeroMedia from './models/HeroMedia.js';
 
 // Load environment variables
 dotenv.config();
@@ -56,10 +58,90 @@ async function initializeAdminUser() {
   }
 }
 
+// Function to initialize contact information if it doesn't exist
+async function initializeContact() {
+  try {
+    const existingContact = await Contact.findOne();
+
+    if (!existingContact) {
+      console.log('🔄 Creating default contact information...');
+      const contact = new Contact({
+        phone: '+91 98765 43210',
+        email: 'support@vasstra.com',
+        address: '123 Fashion Street, Textile Hub\nMumbai, Maharashtra 400001',
+        businessHours: 'Monday - Saturday: 10:00 AM - 7:00 PM\nSunday: Closed',
+        whatsapp: '919876543210'
+      });
+
+      await contact.save();
+      console.log('✅ Contact information initialized successfully!');
+    } else {
+      console.log('✅ Contact information already exists!');
+    }
+  } catch (error) {
+    console.error('❌ Error initializing contact:', error);
+  }
+}
+
+// Function to initialize default hero media
+async function initializeHeroMedia() {
+  try {
+    const existingMedia = await HeroMedia.countDocuments();
+
+    if (existingMedia === 0) {
+      console.log('🔄 Creating default hero media...');
+      const defaultMedia = [
+        {
+          title: 'New Arrivals',
+          subtitle: 'Festive Suit Collection',
+          description: 'Discover exquisite handcrafted ethnic wear for every occasion',
+          mediaUrl: 'https://images.unsplash.com/photo-1610706406159-b21bd25c5e9c?w=1200&q=80',
+          mediaType: 'image',
+          cta: 'Shop Now',
+          ctaLink: '/shop?category=new-arrivals',
+          order: 0,
+          isActive: true,
+        },
+        {
+          title: 'Exclusive',
+          subtitle: 'Royal Lehenga Collection',
+          description: 'Timeless elegance meets contemporary design',
+          mediaUrl: 'https://images.unsplash.com/photo-1610706406159-b21bd25c5e9c?w=1200&q=80',
+          mediaType: 'image',
+          cta: 'Explore Collection',
+          ctaLink: '/shop?category=lehengas',
+          order: 1,
+          isActive: true,
+        },
+        {
+          title: 'Bridal Edit',
+          subtitle: 'Wedding Season Special',
+          description: 'Make your special day unforgettable',
+          mediaUrl: 'https://images.unsplash.com/photo-1610706406159-b21bd25c5e9c?w=1200&q=80',
+          mediaType: 'image',
+          cta: 'View Collection',
+          ctaLink: '/shop?category=bridal',
+          order: 2,
+          isActive: true,
+        },
+      ];
+
+      await HeroMedia.insertMany(defaultMedia);
+      console.log('✅ Default hero media initialized successfully!');
+    } else {
+      console.log('✅ Hero media already exists!');
+    }
+  } catch (error) {
+    console.error('❌ Error initializing hero media:', error);
+  }
+}
+
 mongoose.connect(MONGODB_URI)
   .then(async () => {
     console.log('✅ MongoDB connected successfully!');
     await initializeAdminUser();
+    await initializeContact();
+    await initializeHeroMedia();
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
@@ -67,8 +149,33 @@ mongoose.connect(MONGODB_URI)
   });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
+
+// Public endpoints (before routes that require auth)
+app.get('/api/contact', async (req, res) => {
+  try {
+    let contact = await Contact.findOne();
+
+    if (!contact) {
+      contact = new Contact();
+      await contact.save();
+    }
+
+    res.json({
+      success: true,
+      contact
+    });
+  } catch (error) {
+    console.error('Get contact error:', error);
+    res.status(500).json({ error: 'Failed to fetch contact information' });
+  }
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
