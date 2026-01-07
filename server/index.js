@@ -94,8 +94,33 @@ mongoose.connect(MONGODB_URI)
   });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
+
+// Public endpoints (before routes that require auth)
+app.get('/api/contact', async (req, res) => {
+  try {
+    let contact = await Contact.findOne();
+
+    if (!contact) {
+      contact = new Contact();
+      await contact.save();
+    }
+
+    res.json({
+      success: true,
+      contact
+    });
+  } catch (error) {
+    console.error('Get contact error:', error);
+    res.status(500).json({ error: 'Failed to fetch contact information' });
+  }
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
