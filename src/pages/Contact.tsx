@@ -88,7 +88,7 @@ export default function Contact() {
   };
 
   const handleWhatsApp = () => {
-    window.open("https://wa.me/919876543210?text=Hi, I have a query about Vasstra products.", "_blank");
+    window.open(`https://wa.me/${contactInfo.whatsapp}?text=Hi, I have a query about Vasstra products.`, "_blank");
   };
 
   return (
