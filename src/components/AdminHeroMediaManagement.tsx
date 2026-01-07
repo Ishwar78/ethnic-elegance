@@ -354,18 +354,23 @@ export default function AdminHeroMediaManagement() {
               <CardContent className="pt-6">
                 <div className="flex gap-4">
                   {/* Media Preview */}
-                  <div className="w-32 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
+                  <div className="w-32 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center relative">
                     {item.mediaType === 'video' ? (
-                      <video
-                        src={item.mediaUrl}
-                        className="w-full h-full object-cover"
-                        muted
-                        onError={(e) => {
-                          console.error('Video load error:', e);
-                          const target = e.currentTarget;
-                          target.style.display = 'none';
-                        }}
-                      />
+                      <>
+                        <video
+                          src={item.mediaUrl}
+                          className="w-full h-full object-cover"
+                          muted
+                          onError={(e) => {
+                            console.error('Video load error:', e);
+                            const target = e.currentTarget;
+                            target.style.display = 'none';
+                          }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/10 pointer-events-none">
+                          <span className="text-white text-xs font-medium">Video</span>
+                        </div>
+                      </>
                     ) : (
                       <img
                         src={item.mediaUrl}
@@ -374,13 +379,11 @@ export default function AdminHeroMediaManagement() {
                         onError={(e) => {
                           const target = e.currentTarget;
                           target.style.display = 'none';
-                          // Show error text
-                          const parent = target.parentElement;
-                          if (parent) {
-                            parent.innerHTML = '<div class="text-xs text-muted-foreground text-center p-2">Preview unavailable</div>';
-                          }
                         }}
                       />
+                    )}
+                    {(!item.mediaUrl || item.mediaUrl === '') && (
+                      <div className="text-xs text-muted-foreground text-center p-2">No media</div>
                     )}
                   </div>
 
