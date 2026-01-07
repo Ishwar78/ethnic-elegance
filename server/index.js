@@ -86,6 +86,7 @@ mongoose.connect(MONGODB_URI)
   .then(async () => {
     console.log('✅ MongoDB connected successfully!');
     await initializeAdminUser();
+    await initializeContact();
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
