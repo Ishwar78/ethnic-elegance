@@ -9,6 +9,7 @@ import heroMediaRoutes from './routes/heroMedia.js';
 import productsRoutes from './routes/products.js';
 import categoriesRoutes from './routes/categories.js';
 import User from './models/User.js';
+import Contact from './models/Contact.js';
 
 // Load environment variables
 dotenv.config();
