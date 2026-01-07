@@ -398,59 +398,66 @@ const AdminCategoryManagement = () => {
           <CardTitle>All Categories</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {categories.map((category) => (
-              <div 
-                key={category.id} 
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    category.parentId ? 'bg-muted' : 'bg-primary/10'
-                  }`}>
-                    {category.parentId ? (
-                      <Layers className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <FolderTree className="h-5 w-5 text-primary" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium">{category.name}</h3>
-                      {category.parentId && (
-                        <Badge variant="outline" className="text-xs">
-                          Sub of {getParentName(category.parentId)}
-                        </Badge>
-                      )}
-                      {!category.isActive && (
-                        <Badge variant="secondary">Inactive</Badge>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-2 text-muted-foreground">Loading categories...</span>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {categories.map((category) => (
+                <div
+                  key={category._id || category.id}
+                  className="flex items-center justify-between p-4 border rounded-lg"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      category.parentId ? 'bg-muted' : 'bg-primary/10'
+                    }`}>
+                      {category.parentId ? (
+                        <Layers className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <FolderTree className="h-5 w-5 text-primary" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {category.productCount} products • /{category.slug}
-                    </p>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{category.name}</h3>
+                        {category.parentId && (
+                          <Badge variant="outline" className="text-xs">
+                            Sub of {getParentName(category.parentId)}
+                          </Badge>
+                        )}
+                        {!category.isActive && (
+                          <Badge variant="secondary">Inactive</Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {category.productCount} products • /{category.slug}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={category.isActive}
+                      onCheckedChange={() => toggleActive(category._id || category.id)}
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(category)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(category._id || category.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={category.isActive}
-                    onCheckedChange={() => toggleActive(category.id)}
-                  />
-                  <Button variant="ghost" size="icon" onClick={() => handleEdit(category)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => handleDelete(category.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
