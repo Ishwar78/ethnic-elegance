@@ -44,64 +44,59 @@ const priorityColors: Record<string, string> = {
 
 export default function AdminTicketManagement() {
   const { toast } = useToast();
+  const { token } = useAuth();
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [responseText, setResponseText] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [isResponding, setIsResponding] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
 
-  const [tickets, setTickets] = useState<SupportTicket[]>([
-    {
-      id: "TKT001",
-      userId: "user1",
-      userName: "Priya Sharma",
-      userEmail: "priya@example.com",
-      subject: "Order not delivered",
-      category: "order",
-      status: "open",
-      priority: "high",
-      createdAt: new Date(Date.now() - 86400000).toISOString(),
-      message: "My order #VAS12345 was supposed to arrive yesterday but I haven't received it yet. Please help!",
-      responses: [],
-    },
-    {
-      id: "TKT002",
-      userId: "user2",
-      userName: "Rahul Verma",
-      userEmail: "rahul@example.com",
-      subject: "Payment failed but amount deducted",
-      category: "payment",
-      status: "in-progress",
-      priority: "high",
-      createdAt: new Date(Date.now() - 172800000).toISOString(),
-      message: "I tried to place an order but payment failed. However, ₹2,999 was deducted from my account.",
-      responses: [
-        {
-          message: "Hi Rahul, we're looking into this issue. Can you please share your transaction ID?",
-          isAdmin: true,
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  // Fetch tickets from API
+  useEffect(() => {
+    if (token) {
+      fetchTickets();
+    }
+  }, [token]);
+
+  const fetchTickets = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/tickets/admin/all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
         },
-      ],
-    },
-    {
-      id: "TKT003",
-      userId: "user3",
-      userName: "Anita Desai",
-      userEmail: "anita@example.com",
-      subject: "Size exchange request",
-      category: "general",
-      status: "resolved",
-      priority: "low",
-      createdAt: new Date(Date.now() - 259200000).toISOString(),
-      message: "I received my kurta set but the size is slightly big. Can I exchange it for a smaller size?",
-      responses: [
-        {
-          message: "Of course! Please visit our returns page to initiate an exchange. Use code EXCHANGE10 for free exchange.",
-          isAdmin: true,
-          createdAt: new Date(Date.now() - 172800000).toISOString(),
-        },
-      ],
-    },
-  ]);
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setTickets(data.tickets.map((ticket: any) => ({
+          id: ticket._id,
+          userId: ticket.userId?._id,
+          userName: ticket.userId?.name || 'Unknown',
+          userEmail: ticket.userId?.email || 'Unknown',
+          subject: ticket.subject,
+          category: ticket.category,
+          status: ticket.status,
+          priority: ticket.priority || 'medium',
+          createdAt: ticket.createdAt,
+          message: ticket.message,
+          responses: ticket.responses || [],
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching tickets:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch support tickets',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredTickets = filterStatus === "all" 
     ? tickets 
