@@ -499,18 +499,18 @@ export default function ProductManagement() {
               <div className="space-y-2">
                 <Label>Subcategory</Label>
                 <Select
-                  value={formData.subcategory}
+                  value={formData.subcategory || ""}
                   onValueChange={(value) => setFormData({ ...formData, subcategory: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select subcategory" />
                   </SelectTrigger>
                   <SelectContent>
-                    {subcategories[formData.category as keyof typeof subcategories]?.map((sub) => (
-                      <SelectItem key={sub} value={sub}>
+                    {formData.category && subcategories[formData.category as keyof typeof subcategories]?.map((sub) => (
+                      <SelectItem key={sub} value={sub || ""}>
                         {sub}
                       </SelectItem>
-                    ))}
+                    )) || null}
                   </SelectContent>
                 </Select>
               </div>
