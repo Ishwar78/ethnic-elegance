@@ -6,6 +6,8 @@ import bcrypt from 'bcryptjs';
 import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
 import heroMediaRoutes from './routes/heroMedia.js';
+import productsRoutes from './routes/products.js';
+import categoriesRoutes from './routes/categories.js';
 import User from './models/User.js';
 
 // Load environment variables
