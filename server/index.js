@@ -57,6 +57,31 @@ async function initializeAdminUser() {
   }
 }
 
+// Function to initialize contact information if it doesn't exist
+async function initializeContact() {
+  try {
+    const existingContact = await Contact.findOne();
+
+    if (!existingContact) {
+      console.log('🔄 Creating default contact information...');
+      const contact = new Contact({
+        phone: '+91 98765 43210',
+        email: 'support@vasstra.com',
+        address: '123 Fashion Street, Textile Hub\nMumbai, Maharashtra 400001',
+        businessHours: 'Monday - Saturday: 10:00 AM - 7:00 PM\nSunday: Closed',
+        whatsapp: '919876543210'
+      });
+
+      await contact.save();
+      console.log('✅ Contact information initialized successfully!');
+    } else {
+      console.log('✅ Contact information already exists!');
+    }
+  } catch (error) {
+    console.error('❌ Error initializing contact:', error);
+  }
+}
+
 mongoose.connect(MONGODB_URI)
   .then(async () => {
     console.log('✅ MongoDB connected successfully!');
