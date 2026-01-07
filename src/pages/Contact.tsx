@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, Clock, Send, MessageCircle } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Send, MessageCircle, Loader2 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -10,8 +10,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
+interface ContactInfo {
+  phone: string;
+  email: string;
+  address: string;
+  businessHours: string;
+  whatsapp: string;
+}
+
 export default function Contact() {
   const { toast } = useToast();
+  const [contactInfo, setContactInfo] = useState<ContactInfo>({
+    phone: "+91 98765 43210",
+    email: "support@vasstra.com",
+    address: "123 Fashion Street, Textile Hub\nMumbai, Maharashtra 400001",
+    businessHours: "Monday - Saturday: 10:00 AM - 7:00 PM\nSunday: Closed",
+    whatsapp: "919876543210",
+  });
+  const [isLoadingContact, setIsLoadingContact] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20,6 +36,40 @@ export default function Contact() {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  // Fetch contact information on mount
+  useEffect(() => {
+    fetchContactInfo();
+  }, []);
+
+  const fetchContactInfo = async () => {
+    try {
+      setIsLoadingContact(true);
+      const response = await fetch(`${API_URL}/admin/contact/public`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch contact information');
+      }
+
+      const data = await response.json();
+      if (data.contact) {
+        setContactInfo({
+          phone: data.contact.phone || "+91 98765 43210",
+          email: data.contact.email || "support@vasstra.com",
+          address: data.contact.address || "123 Fashion Street, Textile Hub\nMumbai, Maharashtra 400001",
+          businessHours: data.contact.businessHours || "Monday - Saturday: 10:00 AM - 7:00 PM\nSunday: Closed",
+          whatsapp: data.contact.whatsapp || "919876543210",
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching contact info:', error);
+      // Use default values if fetch fails
+    } finally {
+      setIsLoadingContact(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
