@@ -53,7 +53,7 @@ export default function ProductManagement() {
     name: "",
     price: "",
     originalPrice: "",
-    category: "Ethnic Wear",
+    category: "ethnic_wear",
     subcategory: "",
     sizes: "",
     colors: "",
@@ -61,12 +61,40 @@ export default function ProductManagement() {
     isBestseller: false,
     isSummer: false,
     isWinter: false,
+    description: "",
   });
 
-  const categories = ["all", "Ethnic Wear", "Western Wear"];
-  const subcategories = {
-    "Ethnic Wear": ["Kurta Sets", "Anarkali Suits", "Lehengas", "Party Wear", "Festive Collection"],
-    "Western Wear": ["Tops & Tees", "Dresses", "Co-ord Sets", "Casual Wear"],
+  const categories = ["all", "ethnic_wear", "western_wear"];
+  const categoryLabels: { [key: string]: string } = {
+    "ethnic_wear": "Ethnic Wear",
+    "western_wear": "Western Wear",
+  };
+
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/products/admin/all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+
+      const data = await response.json();
+      setProducts(data.products || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load products",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filteredProducts = products.filter((product) => {
