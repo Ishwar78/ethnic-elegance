@@ -111,12 +111,13 @@ export default function ProductManagement() {
       originalPrice: product.originalPrice.toString(),
       category: product.category,
       subcategory: product.subcategory || "",
-      sizes: product.sizes.join(", "),
-      colors: product.colors.join(", "),
+      sizes: (product.sizes || []).join(", "),
+      colors: (product.colors || []).join(", "),
       isNew: product.isNew || false,
       isBestseller: product.isBestseller || false,
       isSummer: product.isSummer || false,
       isWinter: product.isWinter || false,
+      description: "",
     });
     setIsAddMode(false);
     setIsDialogOpen(true);
@@ -128,7 +129,7 @@ export default function ProductManagement() {
       name: "",
       price: "",
       originalPrice: "",
-      category: "Ethnic Wear",
+      category: "ethnic_wear",
       subcategory: "",
       sizes: "S, M, L, XL",
       colors: "",
@@ -136,29 +137,127 @@ export default function ProductManagement() {
       isBestseller: false,
       isSummer: false,
       isWinter: false,
+      description: "",
     });
     setIsAddMode(true);
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
-    // Frontend only - show success message
-    toast({
-      title: isAddMode ? "Product Added" : "Product Updated",
-      description: isAddMode
-        ? `${formData.name} has been added successfully.`
-        : `${formData.name} has been updated successfully.`,
-    });
-    setIsDialogOpen(false);
+  const handleSave = async () => {
+    if (!formData.name || !formData.price || !formData.category) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const sizes = formData.sizes
+        .split(",")
+        .map(s => s.trim().toUpperCase())
+        .filter(s => s);
+      const colors = formData.colors
+        .split(",")
+        .map(c => c.trim())
+        .filter(c => c);
+
+      const payload = {
+        name: formData.name,
+        price: parseFloat(formData.price),
+        originalPrice: parseFloat(formData.originalPrice),
+        category: formData.category,
+        image: "https://via.placeholder.com/300x300?text=" + formData.name.replace(" ", "+"),
+        sizes,
+        colors,
+        description: formData.description || formData.name,
+      };
+
+      if (isAddMode) {
+        const response = await fetch(`${API_URL}/products`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create product');
+        }
+
+        toast({
+          title: "Success",
+          description: `${formData.name} has been added successfully.`,
+        });
+      } else if (selectedProduct?._id) {
+        const response = await fetch(`${API_URL}/products/${selectedProduct._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update product');
+        }
+
+        toast({
+          title: "Success",
+          description: `${formData.name} has been updated successfully.`,
+        });
+      }
+
+      setIsDialogOpen(false);
+      fetchProducts();
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save product",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDelete = (product: Product) => {
-    // Frontend only - show success message
-    toast({
-      title: "Product Deleted",
-      description: `${product.name} has been removed.`,
-      variant: "destructive",
-    });
+  const handleDelete = async (product: Product) => {
+    if (!confirm(`Are you sure you want to delete ${product.name}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/products/${product._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+
+      toast({
+        title: "Success",
+        description: `${product.name} has been removed.`,
+      });
+
+      fetchProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
