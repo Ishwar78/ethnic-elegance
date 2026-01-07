@@ -514,6 +514,158 @@ export default function AdminDashboard() {
           </Tabs>
         </main>
       </div>
+
+      {/* Order Details Dialog */}
+      <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          {selectedOrder && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Order Details</DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* Customer Info */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-3">Customer Information</h3>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-muted-foreground">Name</p>
+                          <p className="font-medium">{selectedOrder.userId?.name}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground mt-1" />
+                        <div>
+                          <p className="text-muted-foreground">Email</p>
+                          <p className="font-medium break-all">{selectedOrder.userId?.email}</p>
+                        </div>
+                      </div>
+                      {selectedOrder.userId?.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <p className="text-muted-foreground">Phone</p>
+                            <p className="font-medium">{selectedOrder.userId?.phone}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Shipping Address */}
+                  {selectedOrder.shippingAddress && (
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-3">Shipping Address</h3>
+                      <div className="space-y-2 text-sm">
+                        {selectedOrder.shippingAddress.name && (
+                          <p className="font-medium">{selectedOrder.shippingAddress.name}</p>
+                        )}
+                        {selectedOrder.shippingAddress.street && (
+                          <p className="text-muted-foreground">{selectedOrder.shippingAddress.street}</p>
+                        )}
+                        <p className="text-muted-foreground">
+                          {selectedOrder.shippingAddress.city && `${selectedOrder.shippingAddress.city}, `}
+                          {selectedOrder.shippingAddress.state && `${selectedOrder.shippingAddress.state} `}
+                          {selectedOrder.shippingAddress.zipCode}
+                        </p>
+                        {selectedOrder.shippingAddress.country && (
+                          <p className="text-muted-foreground">{selectedOrder.shippingAddress.country}</p>
+                        )}
+                        {selectedOrder.shippingAddress.phone && (
+                          <p className="text-muted-foreground">Phone: {selectedOrder.shippingAddress.phone}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Order Summary */}
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <div className="grid grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Order Date</p>
+                      <p className="font-medium">{new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Status</p>
+                      <span className={`px-2 py-1 rounded text-xs font-medium inline-block mt-1 ${
+                        selectedOrder.status === 'delivered'
+                          ? 'bg-green-100 text-green-800'
+                          : selectedOrder.status === 'cancelled'
+                          ? 'bg-red-100 text-red-800'
+                          : selectedOrder.status === 'shipped'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Payment</p>
+                      <p className="font-medium capitalize">{selectedOrder.paymentMethod?.replace('_', ' ')}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Total Amount</p>
+                      <p className="font-semibold text-lg">₹{selectedOrder.totalAmount?.toLocaleString()}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Order Items */}
+                <div>
+                  <h3 className="font-semibold text-foreground mb-3">Order Items</h3>
+                  <div className="border rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <thead className="bg-muted">
+                        <tr>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-foreground">Product</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-foreground">Price</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-foreground">Qty</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-foreground">Size</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-foreground">Color</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-foreground">Subtotal</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {selectedOrder.items?.map((item: any, index: number) => (
+                          <tr key={index} className="hover:bg-muted/30">
+                            <td className="px-4 py-3 text-sm text-foreground">{item.name}</td>
+                            <td className="px-4 py-3 text-sm text-foreground">₹{item.price?.toLocaleString()}</td>
+                            <td className="px-4 py-3 text-sm text-foreground">{item.quantity}</td>
+                            <td className="px-4 py-3 text-sm text-muted-foreground">{item.size || '-'}</td>
+                            <td className="px-4 py-3 text-sm text-muted-foreground">{item.color || '-'}</td>
+                            <td className="px-4 py-3 text-sm text-right text-foreground font-medium">
+                              ₹{((item.price || 0) * (item.quantity || 0)).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Additional Notes */}
+                {selectedOrder.notes && (
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-2">Order Notes</h3>
+                    <p className="text-sm text-muted-foreground">{selectedOrder.notes}</p>
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSelectedOrder(null)}>
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
