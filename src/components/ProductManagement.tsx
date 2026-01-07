@@ -283,11 +283,9 @@ export default function ProductManagement() {
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat === "all" ? "All Categories" : cat}
-                </SelectItem>
-              ))}
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="ethnic_wear">Ethnic Wear</SelectItem>
+              <SelectItem value="western_wear">Western Wear</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={handleAdd}>
