@@ -222,7 +222,10 @@ export default function AdminDashboard() {
             <p className="text-muted-foreground">Manage users, orders, and view statistics</p>
           </div>
 
-          <Tabs defaultValue={defaultTab} className="space-y-6">
+          <Tabs defaultValue={defaultTab} className="space-y-6" onValueChange={(value) => {
+            if (value === 'users') fetchUsers();
+            if (value === 'orders') fetchOrders();
+          }}>
             <TabsList className="flex flex-wrap gap-1">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="hero-media">Hero Slider</TabsTrigger>
