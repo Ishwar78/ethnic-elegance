@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { products, Product } from "@/data/products";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,21 +8,52 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, Edit2, Trash2, Package } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Search, Plus, Edit2, Trash2, Package, Loader2 } from "lucide-react";
+
+interface Product {
+  _id?: string;
+  id?: string;
+  name: string;
+  price: number;
+  originalPrice: number;
+  category: string;
+  image: string;
+  subcategory?: string;
+  sizes?: string[];
+  colors?: string[];
+  isNew?: boolean;
+  isBestseller?: boolean;
+  isSummer?: boolean;
+  isWinter?: boolean;
+  stock?: number;
+  isActive?: boolean;
+}
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function ProductManagement() {
+  const { token } = useAuth();
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAddMode, setIsAddMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+
+  // Load products on mount
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     originalPrice: "",
-    category: "Ethnic Wear",
+    category: "ethnic_wear",
     subcategory: "",
     sizes: "",
     colors: "",
@@ -31,12 +61,40 @@ export default function ProductManagement() {
     isBestseller: false,
     isSummer: false,
     isWinter: false,
+    description: "",
   });
 
-  const categories = ["all", "Ethnic Wear", "Western Wear"];
-  const subcategories = {
-    "Ethnic Wear": ["Kurta Sets", "Anarkali Suits", "Lehengas", "Party Wear", "Festive Collection"],
-    "Western Wear": ["Tops & Tees", "Dresses", "Co-ord Sets", "Casual Wear"],
+  const categories = ["all", "ethnic_wear", "western_wear"];
+  const categoryLabels: { [key: string]: string } = {
+    "ethnic_wear": "Ethnic Wear",
+    "western_wear": "Western Wear",
+  };
+
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/products/admin/all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+
+      const data = await response.json();
+      setProducts(data.products || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load products",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filteredProducts = products.filter((product) => {
@@ -53,12 +111,13 @@ export default function ProductManagement() {
       originalPrice: product.originalPrice.toString(),
       category: product.category,
       subcategory: product.subcategory || "",
-      sizes: product.sizes.join(", "),
-      colors: product.colors.join(", "),
+      sizes: (product.sizes || []).join(", "),
+      colors: (product.colors || []).join(", "),
       isNew: product.isNew || false,
       isBestseller: product.isBestseller || false,
       isSummer: product.isSummer || false,
       isWinter: product.isWinter || false,
+      description: "",
     });
     setIsAddMode(false);
     setIsDialogOpen(true);
@@ -70,7 +129,7 @@ export default function ProductManagement() {
       name: "",
       price: "",
       originalPrice: "",
-      category: "Ethnic Wear",
+      category: "ethnic_wear",
       subcategory: "",
       sizes: "S, M, L, XL",
       colors: "",
@@ -78,29 +137,127 @@ export default function ProductManagement() {
       isBestseller: false,
       isSummer: false,
       isWinter: false,
+      description: "",
     });
     setIsAddMode(true);
     setIsDialogOpen(true);
   };
 
-  const handleSave = () => {
-    // Frontend only - show success message
-    toast({
-      title: isAddMode ? "Product Added" : "Product Updated",
-      description: isAddMode
-        ? `${formData.name} has been added successfully.`
-        : `${formData.name} has been updated successfully.`,
-    });
-    setIsDialogOpen(false);
+  const handleSave = async () => {
+    if (!formData.name || !formData.price || !formData.category) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const sizes = formData.sizes
+        .split(",")
+        .map(s => s.trim().toUpperCase())
+        .filter(s => s);
+      const colors = formData.colors
+        .split(",")
+        .map(c => c.trim())
+        .filter(c => c);
+
+      const payload = {
+        name: formData.name,
+        price: parseFloat(formData.price),
+        originalPrice: parseFloat(formData.originalPrice),
+        category: formData.category,
+        image: "https://via.placeholder.com/300x300?text=" + formData.name.replace(" ", "+"),
+        sizes,
+        colors,
+        description: formData.description || formData.name,
+      };
+
+      if (isAddMode) {
+        const response = await fetch(`${API_URL}/products`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create product');
+        }
+
+        toast({
+          title: "Success",
+          description: `${formData.name} has been added successfully.`,
+        });
+      } else if (selectedProduct?._id) {
+        const response = await fetch(`${API_URL}/products/${selectedProduct._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update product');
+        }
+
+        toast({
+          title: "Success",
+          description: `${formData.name} has been updated successfully.`,
+        });
+      }
+
+      setIsDialogOpen(false);
+      fetchProducts();
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save product",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDelete = (product: Product) => {
-    // Frontend only - show success message
-    toast({
-      title: "Product Deleted",
-      description: `${product.name} has been removed.`,
-      variant: "destructive",
-    });
+  const handleDelete = async (product: Product) => {
+    if (!confirm(`Are you sure you want to delete ${product.name}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/products/${product._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+
+      toast({
+        title: "Success",
+        description: `${product.name} has been removed.`,
+      });
+
+      fetchProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -126,11 +283,9 @@ export default function ProductManagement() {
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat === "all" ? "All Categories" : cat}
-                </SelectItem>
-              ))}
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="ethnic_wear">Ethnic Wear</SelectItem>
+              <SelectItem value="western_wear">Western Wear</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={handleAdd}>
@@ -160,7 +315,7 @@ export default function ProductManagement() {
                 <span className="text-green-600 font-bold text-sm">E</span>
               </div>
               <div>
-                <p className="text-2xl font-bold">{products.filter((p) => p.isEthnic).length}</p>
+                <p className="text-2xl font-bold">{products.filter((p) => p.category === "ethnic_wear").length}</p>
                 <p className="text-xs text-muted-foreground">Ethnic Wear</p>
               </div>
             </div>
@@ -173,7 +328,7 @@ export default function ProductManagement() {
                 <span className="text-blue-600 font-bold text-sm">W</span>
               </div>
               <div>
-                <p className="text-2xl font-bold">{products.filter((p) => p.isWestern).length}</p>
+                <p className="text-2xl font-bold">{products.filter((p) => p.category === "western_wear").length}</p>
                 <p className="text-xs text-muted-foreground">Western Wear</p>
               </div>
             </div>
@@ -200,77 +355,86 @@ export default function ProductManagement() {
           <CardTitle>Products ({filteredProducts.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Product</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Category</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Price</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Tags</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-muted/50">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-12 h-12 rounded-lg object-cover"
-                        />
-                        <div>
-                          <p className="font-medium text-sm text-foreground">{product.name}</p>
-                          <p className="text-xs text-muted-foreground">{product.subcategory}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{product.category}</td>
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="font-medium text-foreground">₹{product.price.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground line-through">
-                          ₹{product.originalPrice.toLocaleString()}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1">
-                        {product.isNew && (
-                          <Badge variant="secondary" className="text-xs">New</Badge>
-                        )}
-                        {product.isBestseller && (
-                          <Badge variant="default" className="text-xs">Bestseller</Badge>
-                        )}
-                        {product.isSummer && (
-                          <Badge variant="outline" className="text-xs">Summer</Badge>
-                        )}
-                        {product.isWinter && (
-                          <Badge variant="outline" className="text-xs">Winter</Badge>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(product)}>
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(product)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-2 text-muted-foreground">Loading products...</span>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Product</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Category</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Price</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Tags</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredProducts.map((product) => (
+                    <tr key={product._id || product.id} className="hover:bg-muted/50">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-12 h-12 rounded-lg object-cover"
+                          />
+                          <div>
+                            <p className="font-medium text-sm text-foreground">{product.name}</p>
+                            <p className="text-xs text-muted-foreground">{product.subcategory}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {categoryLabels[product.category] || product.category}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div>
+                          <p className="font-medium text-foreground">₹{product.price.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground line-through">
+                            ₹{product.originalPrice.toLocaleString()}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {product.isNew && (
+                            <Badge variant="secondary" className="text-xs">New</Badge>
+                          )}
+                          {product.isBestseller && (
+                            <Badge variant="default" className="text-xs">Bestseller</Badge>
+                          )}
+                          {product.isSummer && (
+                            <Badge variant="outline" className="text-xs">Summer</Badge>
+                          )}
+                          {product.isWinter && (
+                            <Badge variant="outline" className="text-xs">Winter</Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(product)}>
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleDelete(product)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No products found.
+              {filteredProducts.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No products found.
+                </div>
+              )}
             </div>
           )}
         </CardContent>
@@ -322,8 +486,8 @@ export default function ProductManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Ethnic Wear">Ethnic Wear</SelectItem>
-                    <SelectItem value="Western Wear">Western Wear</SelectItem>
+                    <SelectItem value="ethnic_wear">Ethnic Wear</SelectItem>
+                    <SelectItem value="western_wear">Western Wear</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -395,10 +559,11 @@ export default function ProductManagement() {
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
                 Cancel
               </Button>
-              <Button onClick={handleSave}>
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {isAddMode ? "Add Product" : "Save Changes"}
               </Button>
             </div>
