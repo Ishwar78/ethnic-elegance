@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { products, Product } from "@/data/products";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,15 +8,46 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, Edit2, Trash2, Package } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Search, Plus, Edit2, Trash2, Package, Loader2 } from "lucide-react";
+
+interface Product {
+  _id?: string;
+  id?: string;
+  name: string;
+  price: number;
+  originalPrice: number;
+  category: string;
+  image: string;
+  subcategory?: string;
+  sizes?: string[];
+  colors?: string[];
+  isNew?: boolean;
+  isBestseller?: boolean;
+  isSummer?: boolean;
+  isWinter?: boolean;
+  stock?: number;
+  isActive?: boolean;
+}
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function ProductManagement() {
+  const { token } = useAuth();
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAddMode, setIsAddMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+
+  // Load products on mount
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const [formData, setFormData] = useState({
     name: "",
