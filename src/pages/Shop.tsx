@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Filter, Grid3X3, LayoutGrid, ChevronDown, Heart, Eye, ShoppingBag } from "lucide-react";
+import { Filter, Grid3X3, LayoutGrid, ChevronDown, Heart, Eye, ShoppingBag, Loader2 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -18,7 +18,9 @@ import product6 from "@/assets/product-6.jpg";
 import product7 from "@/assets/product-7.jpg";
 import product8 from "@/assets/product-8.jpg";
 
-const products = [
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+const fallbackProducts = [
   { id: 1, name: "Royal Burgundy Embroidered Suit", price: 4999, originalPrice: 6999, discount: 29, image: product1, hoverImage: product5, category: "Ethnic Wear", sizes: ["M", "L", "XL"], colors: ["Burgundy"], isNew: true },
   { id: 2, name: "Royal Blue Anarkali Set", price: 5499, originalPrice: 7999, discount: 31, image: product2, hoverImage: product7, category: "Anarkali", sizes: ["S", "M", "L"], colors: ["Blue"], isBestseller: true },
   { id: 3, name: "Pink Bridal Lehenga", price: 12999, originalPrice: 18999, discount: 32, image: product3, hoverImage: product3, category: "Lehenga", sizes: ["M", "L", "XL", "XXL"], colors: ["Pink"], isNew: true },
@@ -51,6 +53,8 @@ const sortOptions = [
 
 export default function Shop() {
   const [searchParams] = useSearchParams();
+  const [products, setProducts] = useState(fallbackProducts);
+  const [isLoading, setIsLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [gridCols, setGridCols] = useState<3 | 4>(4);
   const [priceRange, setPriceRange] = useState([0, 20000]);
@@ -58,6 +62,40 @@ export default function Shop() {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("featured");
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`${API_URL}/products`);
+        if (response.ok) {
+          const data = await response.json();
+          const mappedProducts = data.products.map((p: any) => ({
+            _id: p._id,
+            id: p._id,
+            name: p.name,
+            price: p.price,
+            originalPrice: p.originalPrice,
+            discount: Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100),
+            image: p.image,
+            category: p.category === 'ethnic_wear' ? 'Ethnic Wear' : 'Western Wear',
+            sizes: p.sizes || [],
+            colors: p.colors || [],
+            isNew: p.isNew,
+            isBestseller: p.isBestseller,
+          }));
+          setProducts(mappedProducts);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const filteredProducts = products.filter((product) => {
     if (selectedCategory !== "All" && product.category !== selectedCategory) return false;
