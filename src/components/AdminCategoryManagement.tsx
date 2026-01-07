@@ -346,10 +346,11 @@ const AdminCategoryManagement = () => {
               </div>
               
               <div className="flex gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={resetForm} className="flex-1">
+                <Button type="button" variant="outline" onClick={resetForm} className="flex-1" disabled={isSaving}>
                   Cancel
                 </Button>
-                <Button type="submit" className="flex-1">
+                <Button type="submit" className="flex-1" disabled={isSaving}>
+                  {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {editingCategory ? "Update" : "Add"} Category
                 </Button>
               </div>
