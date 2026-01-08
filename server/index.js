@@ -13,6 +13,7 @@ import couponsRoutes from './routes/coupons.js';
 import User from './models/User.js';
 import Contact from './models/Contact.js';
 import HeroMedia from './models/HeroMedia.js';
+import PaymentSettings from './models/PaymentSettings.js';
 
 // Load environment variables
 dotenv.config();
