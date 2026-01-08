@@ -139,6 +139,32 @@ async function initializeHeroMedia() {
   }
 }
 
+// Function to initialize payment settings if it doesn't exist
+async function initializePaymentSettings() {
+  try {
+    const existingPaymentSettings = await PaymentSettings.findOne();
+
+    if (!existingPaymentSettings) {
+      console.log('🔄 Creating default payment settings...');
+      const paymentSettings = new PaymentSettings({
+        upiEnabled: true,
+        upiAddress: '',
+        upiQrCode: '',
+        upiName: 'Vasstra Payments',
+        codePaymentEnabled: true,
+        paymentCodes: []
+      });
+
+      await paymentSettings.save();
+      console.log('✅ Payment settings initialized successfully!');
+    } else {
+      console.log('✅ Payment settings already exist!');
+    }
+  } catch (error) {
+    console.error('❌ Error initializing payment settings:', error);
+  }
+}
+
 mongoose.connect(MONGODB_URI)
   .then(async () => {
     console.log('✅ MongoDB connected successfully!');
