@@ -186,6 +186,7 @@ app.use('/api/hero-media', heroMediaRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/tickets', ticketsRoutes);
+app.use('/api/coupons', couponsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
