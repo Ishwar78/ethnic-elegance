@@ -32,7 +32,28 @@ export default function Checkout() {
     discountValue: number;
   } | null>(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [paymentSettings, setPaymentSettings] = useState<any>(null);
+  const [isLoadingPaymentSettings, setIsLoadingPaymentSettings] = useState(true);
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Fetch payment settings on component mount
+  useEffect(() => {
+    const fetchPaymentSettings = async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/payment-settings`);
+        if (response.ok) {
+          const data = await response.json();
+          setPaymentSettings(data.paymentSettings);
+        }
+      } catch (error) {
+        console.error('Error fetching payment settings:', error);
+      } finally {
+        setIsLoadingPaymentSettings(false);
+      }
+    };
+
+    fetchPaymentSettings();
+  }, []);
 
   const shippingCost = subtotal >= 999 ? 0 : 99;
   const discountAmount = appliedCoupon?.discount || 0;
