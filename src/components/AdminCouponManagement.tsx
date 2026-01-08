@@ -1,29 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Ticket, Copy, Percent, IndianRupee } from "lucide-react";
-import { toast } from "sonner";
+import { Plus, Edit, Trash2, Ticket, Copy, Percent, IndianRupee, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Coupon {
-  id: string;
+  _id?: string;
+  id?: string;
   code: string;
   discountType: "percentage" | "fixed";
   discountValue: number;
@@ -34,53 +36,10 @@ interface Coupon {
   isActive: boolean;
   startDate: string;
   endDate: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
-const initialCoupons: Coupon[] = [
-  {
-    id: "1",
-    code: "WELCOME10",
-    discountType: "percentage",
-    discountValue: 10,
-    minOrderAmount: 999,
-    maxDiscount: 500,
-    usageLimit: null,
-    usedCount: 245,
-    isActive: true,
-    startDate: "2024-01-01",
-    endDate: "2024-12-31",
-    createdAt: "2024-01-01"
-  },
-  {
-    id: "2",
-    code: "FLAT500",
-    discountType: "fixed",
-    discountValue: 500,
-    minOrderAmount: 2999,
-    maxDiscount: null,
-    usageLimit: 100,
-    usedCount: 67,
-    isActive: true,
-    startDate: "2024-06-01",
-    endDate: "2024-06-30",
-    createdAt: "2024-06-01"
-  },
-  {
-    id: "3",
-    code: "SUMMER25",
-    discountType: "percentage",
-    discountValue: 25,
-    minOrderAmount: 1999,
-    maxDiscount: 1000,
-    usageLimit: 500,
-    usedCount: 312,
-    isActive: false,
-    startDate: "2024-03-01",
-    endDate: "2024-05-31",
-    createdAt: "2024-03-01"
-  }
-];
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const AdminCouponManagement = () => {
   const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
