@@ -606,6 +606,82 @@ export default function ProductDetail() {
         <Footer />
         <WhatsAppButton />
       </div>
+
+      {/* Size Chart Modal */}
+      <Dialog open={isSizeChartOpen} onOpenChange={setIsSizeChartOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Size Chart - {product.name}</DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4">
+            {isSizeChartLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin">⏳</div>
+                <span className="ml-2 text-muted-foreground">Loading size chart...</span>
+              </div>
+            ) : sizeChart && sizeChart.sizes && sizeChart.sizes.length > 0 ? (
+              <div className="space-y-4">
+                <div className="text-sm text-muted-foreground mb-4">
+                  Measurements in {sizeChart.unit}
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-muted">
+                        <th className="border border-border px-4 py-2 text-left font-semibold">Size</th>
+                        {sizeChart.sizes[0]?.measurements.map((m: any, i: number) => (
+                          <th
+                            key={i}
+                            className="border border-border px-4 py-2 text-left font-semibold"
+                          >
+                            {m.name}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sizeChart.sizes.map((size: any, sizeIndex: number) => (
+                        <tr
+                          key={sizeIndex}
+                          className={sizeIndex % 2 === 0 ? "bg-background" : "bg-muted/30"}
+                        >
+                          <td className="border border-border px-4 py-3 font-semibold">
+                            {size.label}
+                          </td>
+                          {size.measurements.map((m: any, mIndex: number) => (
+                            <td
+                              key={mIndex}
+                              className="border border-border px-4 py-3"
+                            >
+                              {m.value} {sizeChart.unit}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="text-sm text-muted-foreground mt-4 p-3 bg-muted/30 rounded">
+                  <p className="font-semibold mb-1">How to measure:</p>
+                  <ul className="space-y-1 list-disc list-inside">
+                    <li>Chest: Measure across the bust at the fullest point</li>
+                    <li>Waist: Measure at the natural waistline</li>
+                    <li>Length: Measure from shoulder to desired hemline</li>
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="mb-2">📏 Size chart not available for this product yet.</p>
+                <p className="text-sm">
+                  Please refer to the product description or contact us for sizing information.
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
