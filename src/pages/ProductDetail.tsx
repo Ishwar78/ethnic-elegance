@@ -140,8 +140,30 @@ export default function ProductDetail() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [productId]);
 
-  const averageRating = reviews.length > 0 
-    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length 
+  // Fetch size chart when dialog opens
+  useEffect(() => {
+    if (isSizeChartOpen && !sizeChart) {
+      fetchSizeChart();
+    }
+  }, [isSizeChartOpen]);
+
+  const fetchSizeChart = async () => {
+    try {
+      setIsSizeChartLoading(true);
+      // Note: In a real app, you'd fetch this from the backend using the product's DB ID
+      // For now, we'll try to fetch it (it may not exist for demo products)
+      // In production, you'd need to get the actual MongoDB ID from the product
+      // For this demo, we'll just show a message if no chart is found
+      setSizeChart(null); // Placeholder - would be real chart data from API
+    } catch (error) {
+      console.error('Error fetching size chart:', error);
+    } finally {
+      setIsSizeChartLoading(false);
+    }
+  };
+
+  const averageRating = reviews.length > 0
+    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
     : 4.5;
 
   const handleReviewSubmitted = (newReview: Review) => {
