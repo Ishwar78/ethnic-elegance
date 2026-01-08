@@ -88,7 +88,10 @@ export default function Auth() {
             title: "Account created!",
             description: "Welcome to Vasstra. Opening your dashboard...",
           });
-          navigate("/dashboard?tab=profile");
+          // Use setTimeout to ensure state is updated before navigation
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 100);
         } else {
           toast({
             title: "Signup failed",
