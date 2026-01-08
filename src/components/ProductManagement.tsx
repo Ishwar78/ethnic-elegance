@@ -155,11 +155,24 @@ export default function ProductManagement() {
     setIsDialogOpen(true);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setImagePreview(result);
+        setFormData({ ...formData, image: result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSave = async () => {
-    if (!formData.name || !formData.price || !formData.category) {
+    if (!formData.name || !formData.price || !formData.category || !formData.image) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "Please fill in all required fields including product image",
         variant: "destructive",
       });
       return;
@@ -181,7 +194,7 @@ export default function ProductManagement() {
         price: parseFloat(formData.price),
         originalPrice: parseFloat(formData.originalPrice),
         category: formData.category,
-        image: "https://via.placeholder.com/300x300?text=" + formData.name.replace(" ", "+"),
+        image: formData.image,
         sizes,
         colors,
         description: formData.description || formData.name,
