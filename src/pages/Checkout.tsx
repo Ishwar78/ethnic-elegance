@@ -14,6 +14,8 @@ import { useOrders } from "@/contexts/OrderContext";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, subtotal, totalSavings, clearCart } = useCart();
@@ -22,10 +24,63 @@ export default function Checkout() {
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discount: number;
+    discountType: string;
+    discountValue: number;
+  } | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const shippingCost = subtotal >= 999 ? 0 : 99;
-  const total = subtotal + shippingCost;
+  const discountAmount = appliedCoupon?.discount || 0;
+  const total = Math.max(0, subtotal + shippingCost - discountAmount);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    try {
+      const response = await fetch(
+        `${API_URL}/coupons/validate/${encodeURIComponent(couponCode.toUpperCase())}?orderAmount=${subtotal}`,
+        {
+          method: 'GET',
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Invalid coupon code");
+        return;
+      }
+
+      setAppliedCoupon({
+        code: data.coupon.code,
+        discount: data.coupon.discount,
+        discountType: data.coupon.discountType,
+        discountValue: data.coupon.discountValue,
+      });
+
+      toast.success(`Coupon ${data.coupon.code} applied! You saved ₹${data.coupon.discount}`);
+    } catch (error) {
+      console.error('Error validating coupon:', error);
+      toast.error("Failed to validate coupon");
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    toast.success("Coupon removed");
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
