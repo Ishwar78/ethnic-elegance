@@ -18,6 +18,8 @@ import AdminBannerManagement from "@/components/AdminBannerManagement";
 import AdminCategoryManagement from "@/components/AdminCategoryManagement";
 import AdminCouponManagement from "@/components/AdminCouponManagement";
 import AdminHeroMediaManagement from "@/components/AdminHeroMediaManagement";
+import PaymentManagement from "@/components/PaymentManagement";
+import SizeChartManagement from "@/components/SizeChartManagement";
 
 interface DashboardStats {
   totalUsers: number;
@@ -235,6 +237,8 @@ export default function AdminDashboard() {
               <TabsTrigger value="categories">Categories</TabsTrigger>
               <TabsTrigger value="coupons">Coupons</TabsTrigger>
               <TabsTrigger value="banners">Banners</TabsTrigger>
+              <TabsTrigger value="payments">Payments</TabsTrigger>
+              <TabsTrigger value="size-charts">Size Charts</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
               <TabsTrigger value="tickets">Tickets</TabsTrigger>
@@ -316,6 +320,16 @@ export default function AdminDashboard() {
             {/* Banners Tab */}
             <TabsContent value="banners" className="space-y-6">
               <AdminBannerManagement />
+            </TabsContent>
+
+            {/* Payments Tab */}
+            <TabsContent value="payments" className="space-y-6">
+              <PaymentManagement />
+            </TabsContent>
+
+            {/* Size Charts Tab */}
+            <TabsContent value="size-charts" className="space-y-6">
+              <SizeChartManagement />
             </TabsContent>
 
             {/* Users Tab */}

@@ -10,9 +10,11 @@ import productsRoutes from './routes/products.js';
 import categoriesRoutes from './routes/categories.js';
 import ticketsRoutes from './routes/tickets.js';
 import couponsRoutes from './routes/coupons.js';
+import sizeChartsRoutes from './routes/sizeCharts.js';
 import User from './models/User.js';
 import Contact from './models/Contact.js';
 import HeroMedia from './models/HeroMedia.js';
+import PaymentSettings from './models/PaymentSettings.js';
 
 // Load environment variables
 dotenv.config();
@@ -138,12 +140,39 @@ async function initializeHeroMedia() {
   }
 }
 
+// Function to initialize payment settings if it doesn't exist
+async function initializePaymentSettings() {
+  try {
+    const existingPaymentSettings = await PaymentSettings.findOne();
+
+    if (!existingPaymentSettings) {
+      console.log('🔄 Creating default payment settings...');
+      const paymentSettings = new PaymentSettings({
+        upiEnabled: true,
+        upiAddress: '',
+        upiQrCode: '',
+        upiName: 'Vasstra Payments',
+        codePaymentEnabled: true,
+        paymentCodes: []
+      });
+
+      await paymentSettings.save();
+      console.log('✅ Payment settings initialized successfully!');
+    } else {
+      console.log('✅ Payment settings already exist!');
+    }
+  } catch (error) {
+    console.error('❌ Error initializing payment settings:', error);
+  }
+}
+
 mongoose.connect(MONGODB_URI)
   .then(async () => {
     console.log('✅ MongoDB connected successfully!');
     await initializeAdminUser();
     await initializeContact();
     await initializeHeroMedia();
+    await initializePaymentSettings();
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
@@ -187,6 +216,7 @@ app.use('/api/products', productsRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/tickets', ticketsRoutes);
 app.use('/api/coupons', couponsRoutes);
+app.use('/api/size-charts', sizeChartsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ChevronRight, Truck, Shield, CreditCard, CheckCircle2, Loader2, X } from "lucide-react";
@@ -32,7 +32,28 @@ export default function Checkout() {
     discountValue: number;
   } | null>(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [paymentSettings, setPaymentSettings] = useState<any>(null);
+  const [isLoadingPaymentSettings, setIsLoadingPaymentSettings] = useState(true);
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Fetch payment settings on component mount
+  useEffect(() => {
+    const fetchPaymentSettings = async () => {
+      try {
+        const response = await fetch(`${API_URL}/admin/payment-settings`);
+        if (response.ok) {
+          const data = await response.json();
+          setPaymentSettings(data.paymentSettings);
+        }
+      } catch (error) {
+        console.error('Error fetching payment settings:', error);
+      } finally {
+        setIsLoadingPaymentSettings(false);
+      }
+    };
+
+    fetchPaymentSettings();
+  }, []);
 
   const shippingCost = subtotal >= 999 ? 0 : 99;
   const discountAmount = appliedCoupon?.discount || 0;
@@ -349,6 +370,59 @@ export default function Checkout() {
                       </label>
                     </div>
                   </RadioGroup>
+
+                  {/* UPI Details */}
+                  {paymentMethod === "upi" && paymentSettings?.upiEnabled && (
+                    <div className="mt-6 pt-6 border-t border-border space-y-4">
+                      <h3 className="font-semibold">Scan to Pay via UPI</h3>
+                      {paymentSettings?.upiQrCode && (
+                        <div className="flex flex-col items-center">
+                          <img
+                            src={paymentSettings.upiQrCode}
+                            alt="UPI QR Code"
+                            className="w-48 h-48 border-2 border-border rounded-lg p-2 bg-white"
+                          />
+                          <p className="text-xs text-muted-foreground mt-3">
+                            Scan this QR code with any UPI app
+                          </p>
+                        </div>
+                      )}
+                      {paymentSettings?.upiAddress && (
+                        <div className="bg-muted/50 rounded-lg p-3 text-center">
+                          <p className="text-xs text-muted-foreground mb-1">UPI Address</p>
+                          <p className="font-mono text-sm font-semibold break-all">
+                            {paymentSettings.upiAddress}
+                          </p>
+                        </div>
+                      )}
+                      {paymentSettings?.paymentCodes && paymentSettings.paymentCodes.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold">Other Payment Methods:</p>
+                          <div className="grid grid-cols-1 gap-2">
+                            {paymentSettings.paymentCodes.filter((code: any) => code.isActive).map((code: any, index: number) => (
+                              <div key={index} className="border border-border rounded-lg p-3">
+                                <p className="text-sm font-medium capitalize mb-1">
+                                  {code.name.replace('_', ' ')}
+                                </p>
+                                {code.qrCode && (
+                                  <img
+                                    src={code.qrCode}
+                                    alt={code.name}
+                                    className="w-24 h-24 mx-auto border border-border rounded p-1 bg-white mb-2"
+                                  />
+                                )}
+                                {code.address && (
+                                  <p className="text-xs text-muted-foreground text-center break-all">
+                                    {code.address}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

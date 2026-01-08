@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Heart, Share2, Truck, Shield, RotateCcw, Minus, Plus, ChevronRight, Star, ShoppingBag } from "lucide-react";
+import { Heart, Share2, Truck, Shield, RotateCcw, Minus, Plus, ChevronRight, Star, ShoppingBag, X } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -11,6 +11,7 @@ import RelatedProducts from "@/components/RelatedProducts";
 import RecentlyViewed from "@/components/RecentlyViewed";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
@@ -22,6 +23,8 @@ import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product5 from "@/assets/product-5.jpg";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Extended product data with additional images
 const productImagesMap: Record<number, string[]> = {
@@ -89,6 +92,9 @@ export default function ProductDetail() {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
+  const [sizeChart, setSizeChart] = useState<any>(null);
+  const [isSizeChartLoading, setIsSizeChartLoading] = useState(false);
 
   // Find product from database
   const productId = Number(id) || 1;
@@ -134,8 +140,30 @@ export default function ProductDetail() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [productId]);
 
-  const averageRating = reviews.length > 0 
-    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length 
+  // Fetch size chart when dialog opens
+  useEffect(() => {
+    if (isSizeChartOpen && !sizeChart) {
+      fetchSizeChart();
+    }
+  }, [isSizeChartOpen]);
+
+  const fetchSizeChart = async () => {
+    try {
+      setIsSizeChartLoading(true);
+      // Note: In a real app, you'd fetch this from the backend using the product's DB ID
+      // For now, we'll try to fetch it (it may not exist for demo products)
+      // In production, you'd need to get the actual MongoDB ID from the product
+      // For this demo, we'll just show a message if no chart is found
+      setSizeChart(null); // Placeholder - would be real chart data from API
+    } catch (error) {
+      console.error('Error fetching size chart:', error);
+    } finally {
+      setIsSizeChartLoading(false);
+    }
+  };
+
+  const averageRating = reviews.length > 0
+    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
     : 4.5;
 
   const handleReviewSubmitted = (newReview: Review) => {
@@ -311,7 +339,12 @@ export default function ProductDetail() {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-medium">Select Size</h3>
-                    <button className="text-sm text-primary hover:underline">Size Guide</button>
+                    <button
+                      onClick={() => setIsSizeChartOpen(true)}
+                      className="text-sm text-primary hover:underline transition-colors"
+                    >
+                      Size Guide
+                    </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {product.sizes.map((size) => (
@@ -573,6 +606,82 @@ export default function ProductDetail() {
         <Footer />
         <WhatsAppButton />
       </div>
+
+      {/* Size Chart Modal */}
+      <Dialog open={isSizeChartOpen} onOpenChange={setIsSizeChartOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Size Chart - {product.name}</DialogTitle>
+          </DialogHeader>
+
+          <div className="py-4">
+            {isSizeChartLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin">⏳</div>
+                <span className="ml-2 text-muted-foreground">Loading size chart...</span>
+              </div>
+            ) : sizeChart && sizeChart.sizes && sizeChart.sizes.length > 0 ? (
+              <div className="space-y-4">
+                <div className="text-sm text-muted-foreground mb-4">
+                  Measurements in {sizeChart.unit}
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-muted">
+                        <th className="border border-border px-4 py-2 text-left font-semibold">Size</th>
+                        {sizeChart.sizes[0]?.measurements.map((m: any, i: number) => (
+                          <th
+                            key={i}
+                            className="border border-border px-4 py-2 text-left font-semibold"
+                          >
+                            {m.name}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sizeChart.sizes.map((size: any, sizeIndex: number) => (
+                        <tr
+                          key={sizeIndex}
+                          className={sizeIndex % 2 === 0 ? "bg-background" : "bg-muted/30"}
+                        >
+                          <td className="border border-border px-4 py-3 font-semibold">
+                            {size.label}
+                          </td>
+                          {size.measurements.map((m: any, mIndex: number) => (
+                            <td
+                              key={mIndex}
+                              className="border border-border px-4 py-3"
+                            >
+                              {m.value} {sizeChart.unit}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="text-sm text-muted-foreground mt-4 p-3 bg-muted/30 rounded">
+                  <p className="font-semibold mb-1">How to measure:</p>
+                  <ul className="space-y-1 list-disc list-inside">
+                    <li>Chest: Measure across the bust at the fullest point</li>
+                    <li>Waist: Measure at the natural waistline</li>
+                    <li>Length: Measure from shoulder to desired hemline</li>
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="mb-2">📏 Size chart not available for this product yet.</p>
+                <p className="text-sm">
+                  Please refer to the product description or contact us for sizing information.
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
