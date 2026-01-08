@@ -252,6 +252,55 @@ export default function Checkout() {
                   </div>
                 </div>
 
+                {/* Coupon Code */}
+                <div className="bg-card border border-border rounded-xl p-6">
+                  <h2 className="font-display text-xl font-semibold mb-6">Promo Code</h2>
+                  <div className="space-y-4">
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <div>
+                          <p className="font-semibold text-green-600">{appliedCoupon.code}</p>
+                          <p className="text-sm text-green-600">
+                            Discount: ₹{appliedCoupon.discount}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRemoveCoupon}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter coupon code"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleApplyCoupon();
+                            }
+                          }}
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleApplyCoupon}
+                          disabled={isValidatingCoupon || !couponCode.trim()}
+                        >
+                          {isValidatingCoupon && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                          Apply
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Payment Method */}
                 <div className="bg-card border border-border rounded-xl p-6">
                   <h2 className="font-display text-xl font-semibold mb-6">Payment Method</h2>
