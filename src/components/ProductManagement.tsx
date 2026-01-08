@@ -148,7 +148,9 @@ export default function ProductManagement() {
       isSummer: false,
       isWinter: false,
       description: "",
+      image: "",
     });
+    setImagePreview("");
     setIsAddMode(true);
     setIsDialogOpen(true);
   };
