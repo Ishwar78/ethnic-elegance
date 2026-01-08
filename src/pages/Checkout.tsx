@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ChevronRight, Truck, Shield, CreditCard, CheckCircle2, Loader2, X } from "lucide-react";
