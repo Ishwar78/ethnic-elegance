@@ -332,4 +332,66 @@ router.put('/contact', async (req, res) => {
   }
 });
 
+// Get payment settings
+router.get('/payment-settings', async (req, res) => {
+  try {
+    let paymentSettings = await PaymentSettings.findOne();
+
+    // If no payment settings exist, create one with defaults
+    if (!paymentSettings) {
+      paymentSettings = new PaymentSettings();
+      await paymentSettings.save();
+    }
+
+    res.json({
+      success: true,
+      paymentSettings
+    });
+  } catch (error) {
+    console.error('Get payment settings error:', error);
+    res.status(500).json({ error: 'Failed to fetch payment settings' });
+  }
+});
+
+// Update payment settings
+router.put('/payment-settings', async (req, res) => {
+  try {
+    const {
+      upiEnabled,
+      upiAddress,
+      upiQrCode,
+      upiName,
+      codePaymentEnabled,
+      paymentCodes
+    } = req.body;
+
+    let paymentSettings = await PaymentSettings.findOne();
+
+    // If no payment settings exist, create one
+    if (!paymentSettings) {
+      paymentSettings = new PaymentSettings();
+    }
+
+    // Update fields
+    if (upiEnabled !== undefined) paymentSettings.upiEnabled = upiEnabled;
+    if (upiAddress) paymentSettings.upiAddress = upiAddress;
+    if (upiQrCode) paymentSettings.upiQrCode = upiQrCode;
+    if (upiName) paymentSettings.upiName = upiName;
+    if (codePaymentEnabled !== undefined) paymentSettings.codePaymentEnabled = codePaymentEnabled;
+    if (paymentCodes) paymentSettings.paymentCodes = paymentCodes;
+
+    paymentSettings.updatedAt = new Date();
+    await paymentSettings.save();
+
+    res.json({
+      success: true,
+      paymentSettings,
+      message: 'Payment settings updated successfully'
+    });
+  } catch (error) {
+    console.error('Update payment settings error:', error);
+    res.status(500).json({ error: 'Failed to update payment settings' });
+  }
+});
+
 export default router;
