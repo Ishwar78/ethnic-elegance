@@ -126,7 +126,9 @@ export default function ProductManagement() {
       isSummer: product.isSummer || false,
       isWinter: product.isWinter || false,
       description: "",
+      image: product.image,
     });
+    setImagePreview(product.image);
     setIsAddMode(false);
     setIsDialogOpen(true);
   };
