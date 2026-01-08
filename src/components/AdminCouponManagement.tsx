@@ -92,47 +92,74 @@ const AdminCouponManagement = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (editingCoupon) {
-      setCoupons(coupons.map(coupon => 
-        coupon.id === editingCoupon.id 
-          ? { 
-              ...coupon, 
-              code: formData.code.toUpperCase(),
-              discountType: formData.discountType,
-              discountValue: formData.discountValue,
-              minOrderAmount: formData.minOrderAmount,
-              maxDiscount: formData.maxDiscount ? parseInt(formData.maxDiscount) : null,
-              usageLimit: formData.usageLimit ? parseInt(formData.usageLimit) : null,
-              startDate: formData.startDate,
-              endDate: formData.endDate,
-              isActive: formData.isActive
-            } 
-          : coupon
-      ));
-      toast.success("Coupon updated successfully");
-    } else {
-      const newCoupon: Coupon = {
-        id: Date.now().toString(),
+    setIsSaving(true);
+
+    try {
+      const payload = {
         code: formData.code.toUpperCase(),
         discountType: formData.discountType,
         discountValue: formData.discountValue,
         minOrderAmount: formData.minOrderAmount,
         maxDiscount: formData.maxDiscount ? parseInt(formData.maxDiscount) : null,
         usageLimit: formData.usageLimit ? parseInt(formData.usageLimit) : null,
-        usedCount: 0,
-        isActive: formData.isActive,
         startDate: formData.startDate,
         endDate: formData.endDate,
-        createdAt: new Date().toISOString().split('T')[0]
+        isActive: formData.isActive,
       };
-      setCoupons([...coupons, newCoupon]);
-      toast.success("Coupon created successfully");
+
+      if (editingCoupon?._id) {
+        const response = await fetch(`${API_URL}/coupons/${editingCoupon._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update coupon');
+        }
+
+        toast({
+          title: "Success",
+          description: "Coupon updated successfully",
+        });
+      } else {
+        const response = await fetch(`${API_URL}/coupons`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to create coupon');
+        }
+
+        toast({
+          title: "Success",
+          description: "Coupon created successfully",
+        });
+      }
+
+      resetForm();
+      fetchCoupons();
+    } catch (error) {
+      console.error('Error saving coupon:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save coupon",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
-    
-    resetForm();
   };
 
   const resetForm = () => {
