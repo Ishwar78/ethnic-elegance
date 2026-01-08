@@ -171,6 +171,7 @@ mongoose.connect(MONGODB_URI)
     await initializeAdminUser();
     await initializeContact();
     await initializeHeroMedia();
+    await initializePaymentSettings();
   })
   .catch((err) => {
     console.error('❌ MongoDB connection error:', err);
