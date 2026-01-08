@@ -327,6 +327,11 @@ export default function AdminDashboard() {
               <PaymentManagement />
             </TabsContent>
 
+            {/* Size Charts Tab */}
+            <TabsContent value="size-charts" className="space-y-6">
+              <SizeChartManagement />
+            </TabsContent>
+
             {/* Users Tab */}
             <TabsContent value="users" className="space-y-6">
               <div className="flex gap-4 items-end">
