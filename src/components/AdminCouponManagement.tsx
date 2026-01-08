@@ -460,8 +460,18 @@ const AdminCouponManagement = () => {
           <CardTitle>All Coupons</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {coupons.map((coupon) => (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-2 text-muted-foreground">Loading coupons...</span>
+            </div>
+          ) : coupons.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No coupons created yet.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {coupons.map((coupon) => (
               <div
                 key={coupon._id || coupon.id} 
                 className="flex items-center justify-between p-4 border rounded-lg"
@@ -536,8 +546,9 @@ const AdminCouponManagement = () => {
                   </Button>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
