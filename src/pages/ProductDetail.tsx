@@ -92,6 +92,9 @@ export default function ProductDetail() {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
+  const [sizeChart, setSizeChart] = useState<any>(null);
+  const [isSizeChartLoading, setIsSizeChartLoading] = useState(false);
 
   // Find product from database
   const productId = Number(id) || 1;
