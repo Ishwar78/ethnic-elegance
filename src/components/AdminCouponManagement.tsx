@@ -1,29 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from "@/components/ui/dialog";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Ticket, Copy, Percent, IndianRupee } from "lucide-react";
-import { toast } from "sonner";
+import { Plus, Edit, Trash2, Ticket, Copy, Percent, IndianRupee, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Coupon {
-  id: string;
+  _id?: string;
+  id?: string;
   code: string;
   discountType: "percentage" | "fixed";
   discountValue: number;
@@ -34,56 +36,17 @@ interface Coupon {
   isActive: boolean;
   startDate: string;
   endDate: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
-const initialCoupons: Coupon[] = [
-  {
-    id: "1",
-    code: "WELCOME10",
-    discountType: "percentage",
-    discountValue: 10,
-    minOrderAmount: 999,
-    maxDiscount: 500,
-    usageLimit: null,
-    usedCount: 245,
-    isActive: true,
-    startDate: "2024-01-01",
-    endDate: "2024-12-31",
-    createdAt: "2024-01-01"
-  },
-  {
-    id: "2",
-    code: "FLAT500",
-    discountType: "fixed",
-    discountValue: 500,
-    minOrderAmount: 2999,
-    maxDiscount: null,
-    usageLimit: 100,
-    usedCount: 67,
-    isActive: true,
-    startDate: "2024-06-01",
-    endDate: "2024-06-30",
-    createdAt: "2024-06-01"
-  },
-  {
-    id: "3",
-    code: "SUMMER25",
-    discountType: "percentage",
-    discountValue: 25,
-    minOrderAmount: 1999,
-    maxDiscount: 1000,
-    usageLimit: 500,
-    usedCount: 312,
-    isActive: false,
-    startDate: "2024-03-01",
-    endDate: "2024-05-31",
-    createdAt: "2024-03-01"
-  }
-];
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const AdminCouponManagement = () => {
-  const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
+  const { token } = useAuth();
+  const { toast } = useToast();
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [formData, setFormData] = useState({
@@ -98,47 +61,105 @@ const AdminCouponManagement = () => {
     isActive: true
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchCoupons();
+  }, []);
+
+  const fetchCoupons = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/coupons`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch coupons');
+      }
+
+      const data = await response.json();
+      setCoupons(data.coupons || []);
+    } catch (error) {
+      console.error('Error fetching coupons:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load coupons",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (editingCoupon) {
-      setCoupons(coupons.map(coupon => 
-        coupon.id === editingCoupon.id 
-          ? { 
-              ...coupon, 
-              code: formData.code.toUpperCase(),
-              discountType: formData.discountType,
-              discountValue: formData.discountValue,
-              minOrderAmount: formData.minOrderAmount,
-              maxDiscount: formData.maxDiscount ? parseInt(formData.maxDiscount) : null,
-              usageLimit: formData.usageLimit ? parseInt(formData.usageLimit) : null,
-              startDate: formData.startDate,
-              endDate: formData.endDate,
-              isActive: formData.isActive
-            } 
-          : coupon
-      ));
-      toast.success("Coupon updated successfully");
-    } else {
-      const newCoupon: Coupon = {
-        id: Date.now().toString(),
+    setIsSaving(true);
+
+    try {
+      const payload = {
         code: formData.code.toUpperCase(),
         discountType: formData.discountType,
         discountValue: formData.discountValue,
         minOrderAmount: formData.minOrderAmount,
         maxDiscount: formData.maxDiscount ? parseInt(formData.maxDiscount) : null,
         usageLimit: formData.usageLimit ? parseInt(formData.usageLimit) : null,
-        usedCount: 0,
-        isActive: formData.isActive,
         startDate: formData.startDate,
         endDate: formData.endDate,
-        createdAt: new Date().toISOString().split('T')[0]
+        isActive: formData.isActive,
       };
-      setCoupons([...coupons, newCoupon]);
-      toast.success("Coupon created successfully");
+
+      if (editingCoupon?._id) {
+        const response = await fetch(`${API_URL}/coupons/${editingCoupon._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update coupon');
+        }
+
+        toast({
+          title: "Success",
+          description: "Coupon updated successfully",
+        });
+      } else {
+        const response = await fetch(`${API_URL}/coupons`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to create coupon');
+        }
+
+        toast({
+          title: "Success",
+          description: "Coupon created successfully",
+        });
+      }
+
+      resetForm();
+      fetchCoupons();
+    } catch (error) {
+      console.error('Error saving coupon:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save coupon",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
-    
-    resetForm();
   };
 
   const resetForm = () => {
@@ -166,23 +187,77 @@ const AdminCouponManagement = () => {
       minOrderAmount: coupon.minOrderAmount,
       maxDiscount: coupon.maxDiscount?.toString() || "",
       usageLimit: coupon.usageLimit?.toString() || "",
-      startDate: coupon.startDate,
-      endDate: coupon.endDate,
+      startDate: new Date(coupon.startDate).toISOString().split('T')[0],
+      endDate: new Date(coupon.endDate).toISOString().split('T')[0],
       isActive: coupon.isActive
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setCoupons(coupons.filter(coupon => coupon.id !== id));
-    toast.success("Coupon deleted successfully");
+  const handleDelete = async (coupon: Coupon) => {
+    if (!confirm(`Are you sure you want to delete coupon ${coupon.code}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/coupons/${coupon._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete coupon');
+      }
+
+      toast({
+        title: "Success",
+        description: "Coupon deleted successfully",
+      });
+
+      fetchCoupons();
+    } catch (error) {
+      console.error('Error deleting coupon:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete coupon",
+        variant: "destructive",
+      });
+    }
   };
 
-  const toggleActive = (id: string) => {
-    setCoupons(coupons.map(coupon => 
-      coupon.id === id ? { ...coupon, isActive: !coupon.isActive } : coupon
-    ));
-    toast.success("Coupon status updated");
+  const toggleActive = async (coupon: Coupon) => {
+    try {
+      const response = await fetch(`${API_URL}/coupons/${coupon._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          isActive: !coupon.isActive,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update coupon');
+      }
+
+      toast({
+        title: "Success",
+        description: "Coupon status updated",
+      });
+
+      fetchCoupons();
+    } catch (error) {
+      console.error('Error updating coupon:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update coupon",
+        variant: "destructive",
+      });
+    }
   };
 
   const copyCode = (code: string) => {
@@ -335,10 +410,11 @@ const AdminCouponManagement = () => {
               </div>
               
               <div className="flex gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={resetForm} className="flex-1">
+                <Button type="button" variant="outline" onClick={resetForm} className="flex-1" disabled={isSaving}>
                   Cancel
                 </Button>
-                <Button type="submit" className="flex-1">
+                <Button type="submit" className="flex-1" disabled={isSaving}>
+                  {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {editingCoupon ? "Update" : "Create"} Coupon
                 </Button>
               </div>
@@ -384,10 +460,20 @@ const AdminCouponManagement = () => {
           <CardTitle>All Coupons</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {coupons.map((coupon) => (
-              <div 
-                key={coupon.id} 
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-2 text-muted-foreground">Loading coupons...</span>
+            </div>
+          ) : coupons.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No coupons created yet.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {coupons.map((coupon) => (
+              <div
+                key={coupon._id || coupon.id} 
                 className="flex items-center justify-between p-4 border rounded-lg"
               >
                 <div className="flex items-center gap-4">
@@ -444,24 +530,25 @@ const AdminCouponManagement = () => {
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={coupon.isActive}
-                    onCheckedChange={() => toggleActive(coupon.id)}
+                    onCheckedChange={() => toggleActive(coupon)}
                     disabled={isExpired(coupon.endDate)}
                   />
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(coupon)}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => handleDelete(coupon.id)}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(coupon)}
                     className="text-destructive hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ChevronRight, Truck, Shield, CreditCard, CheckCircle2 } from "lucide-react";
+import { ChevronRight, Truck, Shield, CreditCard, CheckCircle2, Loader2, X } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,10 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCart } from "@/contexts/CartContext";
 import { useOrders } from "@/contexts/OrderContext";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -21,10 +24,63 @@ export default function Checkout() {
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discount: number;
+    discountType: string;
+    discountValue: number;
+  } | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const shippingCost = subtotal >= 999 ? 0 : 99;
-  const total = subtotal + shippingCost;
+  const discountAmount = appliedCoupon?.discount || 0;
+  const total = Math.max(0, subtotal + shippingCost - discountAmount);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    try {
+      const response = await fetch(
+        `${API_URL}/coupons/validate/${encodeURIComponent(couponCode.toUpperCase())}?orderAmount=${subtotal}`,
+        {
+          method: 'GET',
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Invalid coupon code");
+        return;
+      }
+
+      setAppliedCoupon({
+        code: data.coupon.code,
+        discount: data.coupon.discount,
+        discountType: data.coupon.discountType,
+        discountValue: data.coupon.discountValue,
+      });
+
+      toast.success(`Coupon ${data.coupon.code} applied! You saved ₹${data.coupon.discount}`);
+    } catch (error) {
+      console.error('Error validating coupon:', error);
+      toast.error("Failed to validate coupon");
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    toast.success("Coupon removed");
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -193,6 +249,55 @@ export default function Checkout() {
                         <Input id="pincode" placeholder="PIN code" required />
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Coupon Code */}
+                <div className="bg-card border border-border rounded-xl p-6">
+                  <h2 className="font-display text-xl font-semibold mb-6">Promo Code</h2>
+                  <div className="space-y-4">
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <div>
+                          <p className="font-semibold text-green-600">{appliedCoupon.code}</p>
+                          <p className="text-sm text-green-600">
+                            Discount: ₹{appliedCoupon.discount}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRemoveCoupon}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter coupon code"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleApplyCoupon();
+                            }
+                          }}
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleApplyCoupon}
+                          disabled={isValidatingCoupon || !couponCode.trim()}
+                        >
+                          {isValidatingCoupon && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                          Apply
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
 

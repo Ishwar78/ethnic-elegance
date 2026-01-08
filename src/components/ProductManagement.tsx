@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { Search, Plus, Edit2, Trash2, Package, Loader2 } from "lucide-react";
+import { Search, Plus, Edit2, Trash2, Package, Loader2, Upload, X } from "lucide-react";
 
 const subcategories = {
   ethnic_wear: ["Kurta Sets", "Anarkali Suits", "Lehengas", "Party Wear", "Festive Collection"],
@@ -67,7 +67,10 @@ export default function ProductManagement() {
     isSummer: false,
     isWinter: false,
     description: "",
+    image: "",
   });
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories = ["all", "ethnic_wear", "western_wear"];
   const categoryLabels: { [key: string]: string } = {
@@ -123,7 +126,9 @@ export default function ProductManagement() {
       isSummer: product.isSummer || false,
       isWinter: product.isWinter || false,
       description: "",
+      image: product.image,
     });
+    setImagePreview(product.image);
     setIsAddMode(false);
     setIsDialogOpen(true);
   };
@@ -143,16 +148,31 @@ export default function ProductManagement() {
       isSummer: false,
       isWinter: false,
       description: "",
+      image: "",
     });
+    setImagePreview("");
     setIsAddMode(true);
     setIsDialogOpen(true);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setImagePreview(result);
+        setFormData({ ...formData, image: result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSave = async () => {
-    if (!formData.name || !formData.price || !formData.category) {
+    if (!formData.name || !formData.price || !formData.category || !formData.image) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "Please fill in all required fields including product image",
         variant: "destructive",
       });
       return;
@@ -174,7 +194,7 @@ export default function ProductManagement() {
         price: parseFloat(formData.price),
         originalPrice: parseFloat(formData.originalPrice),
         category: formData.category,
-        image: "https://via.placeholder.com/300x300?text=" + formData.name.replace(" ", "+"),
+        image: formData.image,
         sizes,
         colors,
         description: formData.description || formData.name,
@@ -459,6 +479,45 @@ export default function ProductManagement() {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Enter product name"
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Product Image</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+              {imagePreview ? (
+                <div className="relative w-full h-48 rounded-lg overflow-hidden bg-muted border border-border">
+                  <img
+                    src={imagePreview}
+                    alt="Product preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImagePreview("");
+                      setFormData({ ...formData, image: "" });
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                    }}
+                    className="absolute top-2 right-2 bg-destructive text-white p-1 rounded-md hover:bg-destructive/90"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-48 rounded-lg border-2 border-dashed border-border hover:border-primary/50 bg-muted/50 hover:bg-muted flex flex-col items-center justify-center gap-2 transition-colors"
+                >
+                  <Upload className="h-6 w-6 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">Click to upload image</span>
+                </button>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
