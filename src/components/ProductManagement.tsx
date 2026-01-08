@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { Search, Plus, Edit2, Trash2, Package, Loader2 } from "lucide-react";
+import { Search, Plus, Edit2, Trash2, Package, Loader2, Upload, X } from "lucide-react";
 
 const subcategories = {
   ethnic_wear: ["Kurta Sets", "Anarkali Suits", "Lehengas", "Party Wear", "Festive Collection"],
