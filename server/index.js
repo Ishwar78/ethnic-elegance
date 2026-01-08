@@ -216,6 +216,7 @@ app.use('/api/products', productsRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/tickets', ticketsRoutes);
 app.use('/api/coupons', couponsRoutes);
+app.use('/api/size-charts', sizeChartsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
