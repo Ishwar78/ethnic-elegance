@@ -462,8 +462,8 @@ const AdminCouponManagement = () => {
         <CardContent>
           <div className="space-y-3">
             {coupons.map((coupon) => (
-              <div 
-                key={coupon.id} 
+              <div
+                key={coupon._id || coupon.id} 
                 className="flex items-center justify-between p-4 border rounded-lg"
               >
                 <div className="flex items-center gap-4">
