@@ -42,7 +42,11 @@ interface Coupon {
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const AdminCouponManagement = () => {
-  const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
+  const { token } = useAuth();
+  const { toast } = useToast();
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [formData, setFormData] = useState({
@@ -56,6 +60,37 @@ const AdminCouponManagement = () => {
     endDate: "",
     isActive: true
   });
+
+  useEffect(() => {
+    fetchCoupons();
+  }, []);
+
+  const fetchCoupons = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/coupons`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch coupons');
+      }
+
+      const data = await response.json();
+      setCoupons(data.coupons || []);
+    } catch (error) {
+      console.error('Error fetching coupons:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load coupons",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
