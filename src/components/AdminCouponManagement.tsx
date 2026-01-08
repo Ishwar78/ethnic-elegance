@@ -187,23 +187,77 @@ const AdminCouponManagement = () => {
       minOrderAmount: coupon.minOrderAmount,
       maxDiscount: coupon.maxDiscount?.toString() || "",
       usageLimit: coupon.usageLimit?.toString() || "",
-      startDate: coupon.startDate,
-      endDate: coupon.endDate,
+      startDate: new Date(coupon.startDate).toISOString().split('T')[0],
+      endDate: new Date(coupon.endDate).toISOString().split('T')[0],
       isActive: coupon.isActive
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setCoupons(coupons.filter(coupon => coupon.id !== id));
-    toast.success("Coupon deleted successfully");
+  const handleDelete = async (coupon: Coupon) => {
+    if (!confirm(`Are you sure you want to delete coupon ${coupon.code}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/coupons/${coupon._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete coupon');
+      }
+
+      toast({
+        title: "Success",
+        description: "Coupon deleted successfully",
+      });
+
+      fetchCoupons();
+    } catch (error) {
+      console.error('Error deleting coupon:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete coupon",
+        variant: "destructive",
+      });
+    }
   };
 
-  const toggleActive = (id: string) => {
-    setCoupons(coupons.map(coupon => 
-      coupon.id === id ? { ...coupon, isActive: !coupon.isActive } : coupon
-    ));
-    toast.success("Coupon status updated");
+  const toggleActive = async (coupon: Coupon) => {
+    try {
+      const response = await fetch(`${API_URL}/coupons/${coupon._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          isActive: !coupon.isActive,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update coupon');
+      }
+
+      toast({
+        title: "Success",
+        description: "Coupon status updated",
+      });
+
+      fetchCoupons();
+    } catch (error) {
+      console.error('Error updating coupon:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update coupon",
+        variant: "destructive",
+      });
+    }
   };
 
   const copyCode = (code: string) => {
