@@ -236,6 +236,7 @@ export default function AdminDashboard() {
               <TabsTrigger value="categories">Categories</TabsTrigger>
               <TabsTrigger value="coupons">Coupons</TabsTrigger>
               <TabsTrigger value="banners">Banners</TabsTrigger>
+              <TabsTrigger value="payments">Payments</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
               <TabsTrigger value="tickets">Tickets</TabsTrigger>
