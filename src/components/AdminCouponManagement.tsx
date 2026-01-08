@@ -520,7 +520,7 @@ const AdminCouponManagement = () => {
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={coupon.isActive}
-                    onCheckedChange={() => toggleActive(coupon.id)}
+                    onCheckedChange={() => toggleActive(coupon)}
                     disabled={isExpired(coupon.endDate)}
                   />
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(coupon)}>
