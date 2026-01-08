@@ -526,10 +526,10 @@ const AdminCouponManagement = () => {
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(coupon)}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => handleDelete(coupon.id)}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(coupon)}
                     className="text-destructive hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
