@@ -19,6 +19,7 @@ import AdminCategoryManagement from "@/components/AdminCategoryManagement";
 import AdminCouponManagement from "@/components/AdminCouponManagement";
 import AdminHeroMediaManagement from "@/components/AdminHeroMediaManagement";
 import PaymentManagement from "@/components/PaymentManagement";
+import SizeChartManagement from "@/components/SizeChartManagement";
 
 interface DashboardStats {
   totalUsers: number;
