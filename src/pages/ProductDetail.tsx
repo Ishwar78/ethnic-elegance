@@ -339,7 +339,12 @@ export default function ProductDetail() {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-medium">Select Size</h3>
-                    <button className="text-sm text-primary hover:underline">Size Guide</button>
+                    <button
+                      onClick={() => setIsSizeChartOpen(true)}
+                      className="text-sm text-primary hover:underline transition-colors"
+                    >
+                      Size Guide
+                    </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {product.sizes.map((size) => (
