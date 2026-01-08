@@ -67,7 +67,10 @@ export default function ProductManagement() {
     isSummer: false,
     isWinter: false,
     description: "",
+    image: "",
   });
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories = ["all", "ethnic_wear", "western_wear"];
   const categoryLabels: { [key: string]: string } = {
