@@ -320,6 +320,11 @@ export default function AdminDashboard() {
               <AdminBannerManagement />
             </TabsContent>
 
+            {/* Payments Tab */}
+            <TabsContent value="payments" className="space-y-6">
+              <PaymentManagement />
+            </TabsContent>
+
             {/* Users Tab */}
             <TabsContent value="users" className="space-y-6">
               <div className="flex gap-4 items-end">
