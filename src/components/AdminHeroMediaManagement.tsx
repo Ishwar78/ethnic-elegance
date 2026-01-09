@@ -264,7 +264,7 @@ export default function AdminHeroMediaManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="video">Video (MP4)</SelectItem>
+                    <SelectItem value="video">Video (YouTube/Instagram/MP4)</SelectItem>
                     <SelectItem value="gif">GIF</SelectItem>
                     <SelectItem value="image">Image (JPG/PNG)</SelectItem>
                   </SelectContent>
@@ -276,14 +276,17 @@ export default function AdminHeroMediaManagement() {
                 <Label htmlFor="mediaUrl" className="text-foreground">Media URL *</Label>
                 <Input
                   id="mediaUrl"
-                  placeholder="https://example.com/video.mp4 or image.jpg"
+                  placeholder="YouTube, Instagram, or direct video link"
                   value={formData.mediaUrl}
                   onChange={(e) => setFormData({ ...formData, mediaUrl: e.target.value })}
                   required
                 />
-                <p className="text-xs text-muted-foreground">
-                  Paste the full URL of your video, GIF, or image
-                </p>
+                <div className="text-xs text-muted-foreground space-y-1 mt-2 p-2 bg-muted rounded">
+                  <p className="font-semibold text-foreground">How to add videos:</p>
+                  <p>📺 <strong>YouTube:</strong> https://youtu.be/VIDEO_ID or https://www.youtube.com/watch?v=VIDEO_ID</p>
+                  <p>📸 <strong>Instagram:</strong> https://www.instagram.com/p/POST_ID/ or https://www.instagram.com/reel/REEL_ID/</p>
+                  <p>🎬 <strong>Direct Video:</strong> https://example.com/video.mp4</p>
+                </div>
               </div>
 
               {/* CTA Text */}
