@@ -50,6 +50,7 @@ const Index = () => {
           <HeroSlider />
           <TrustBadges />
           <MediaShowcase />
+          <AvailableCoupons />
           <CollectionsSection />
           <FeaturedProducts />
         </main>
