@@ -169,10 +169,46 @@ export default function PaymentManagement() {
     try {
       setIsSaving(true);
 
+      // Validate that at least UPI or Code payment is enabled
+      if (!formData.upiEnabled && !formData.codePaymentEnabled) {
+        toast({
+          title: "Error",
+          description: "Enable at least one payment method",
+          variant: "destructive",
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      // Validate UPI settings if enabled
+      if (formData.upiEnabled && !formData.upiAddress.trim()) {
+        toast({
+          title: "Error",
+          description: "Please enter UPI address if UPI is enabled",
+          variant: "destructive",
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      // Validate payment codes if enabled
+      if (formData.codePaymentEnabled && paymentCodes.length === 0) {
+        toast({
+          title: "Error",
+          description: "Add at least one payment code if code payments are enabled",
+          variant: "destructive",
+        });
+        setIsSaving(false);
+        return;
+      }
+
       const dataToSend = {
-        ...formData,
+        upiEnabled: formData.upiEnabled,
+        upiAddress: formData.upiAddress,
+        upiName: formData.upiName,
         upiQrCode: qrCodePreview,
-        paymentCodes,
+        codePaymentEnabled: formData.codePaymentEnabled,
+        paymentCodes: paymentCodes,
       };
 
       const response = await fetch(`${API_URL}/admin/payment-settings`, {
@@ -184,12 +220,13 @@ export default function PaymentManagement() {
         body: JSON.stringify(dataToSend),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to save payment settings');
+        throw new Error(responseData.error || 'Failed to save payment settings');
       }
 
-      const data = await response.json();
-      setPaymentSettings(data.paymentSettings);
+      setPaymentSettings(responseData.paymentSettings);
 
       toast({
         title: "Success",
@@ -199,7 +236,7 @@ export default function PaymentManagement() {
       console.error('Error saving payment settings:', error);
       toast({
         title: "Error",
-        description: "Failed to save payment settings",
+        description: error instanceof Error ? error.message : "Failed to save payment settings",
         variant: "destructive",
       });
     } finally {
