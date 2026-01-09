@@ -170,6 +170,42 @@ export default function ProductManagement() {
     }
   };
 
+  const handleMultipleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const maxImages = 6;
+      const newImages: string[] = [];
+      let loadedCount = 0;
+
+      Array.from(files).slice(0, maxImages).forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          newImages.push(result);
+          loadedCount++;
+
+          if (loadedCount === Array.from(files).slice(0, maxImages).length) {
+            setImagePreviews([...imagePreviews, ...newImages].slice(0, maxImages));
+            setFormData({
+              ...formData,
+              images: [...imagePreviews, ...newImages].slice(0, maxImages),
+            });
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const updatedPreviews = imagePreviews.filter((_, i) => i !== index);
+    setImagePreviews(updatedPreviews);
+    setFormData({
+      ...formData,
+      images: updatedPreviews,
+    });
+  };
+
   const handleSave = async () => {
     if (!formData.name || !formData.price || !formData.category || !formData.image) {
       toast({
