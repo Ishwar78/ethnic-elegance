@@ -562,6 +562,50 @@ export default function ProductManagement() {
                 </button>
               )}
             </div>
+            <div className="space-y-2">
+              <Label>Additional Images (up to 6 total)</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted border border-border group">
+                    <img
+                      src={preview}
+                      alt={`Product preview ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 bg-destructive text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                {imagePreviews.length < 6 && (
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById("multi-image-input")?.click()}
+                    className="w-full aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary/50 bg-muted/50 hover:bg-muted flex flex-col items-center justify-center gap-1 transition-colors"
+                  >
+                    <Upload className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-xs font-medium text-muted-foreground text-center">
+                      {imagePreviews.length === 0 ? "Add images" : `+${6 - imagePreviews.length}`}
+                    </span>
+                  </button>
+                )}
+              </div>
+              <input
+                id="multi-image-input"
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleMultipleImagesChange}
+                className="hidden"
+              />
+              <p className="text-xs text-muted-foreground">
+                You can upload up to 6 images. First image is used as main product image.
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Price (₹)</Label>
