@@ -153,8 +153,10 @@ export default function ProductManagement() {
       isWinter: false,
       description: "",
       image: "",
+      images: [],
     });
     setImagePreview("");
+    setImagePreviews([]);
     setIsAddMode(true);
     setIsDialogOpen(true);
   };
