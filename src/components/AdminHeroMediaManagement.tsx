@@ -358,22 +358,36 @@ export default function AdminHeroMediaManagement() {
               <CardContent className="pt-6">
                 <div className="flex gap-4">
                   {/* Media Preview */}
-                  <div className="w-32 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center relative">
+                  <div className="w-32 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center relative group">
                     {item.mediaType === 'video' ? (
                       <>
-                        <video
-                          src={item.mediaUrl}
-                          className="w-full h-full object-cover"
-                          muted
-                          onError={(e) => {
-                            console.error('Video load error:', e);
-                            const target = e.currentTarget;
-                            target.style.display = 'none';
-                          }}
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/10 pointer-events-none">
-                          <span className="text-white text-xs font-medium">Video</span>
-                        </div>
+                        {item.mediaUrl.includes('youtube.com') || item.mediaUrl.includes('youtu.be') ? (
+                          <div className="w-full h-full bg-red-900/20 flex flex-col items-center justify-center gap-1">
+                            <Play className="w-6 h-6 text-red-500" />
+                            <span className="text-white text-xs font-medium">YouTube</span>
+                          </div>
+                        ) : item.mediaUrl.includes('instagram.com') ? (
+                          <div className="w-full h-full bg-pink-900/20 flex flex-col items-center justify-center gap-1">
+                            <Play className="w-6 h-6 text-pink-500" />
+                            <span className="text-white text-xs font-medium">Instagram</span>
+                          </div>
+                        ) : (
+                          <>
+                            <video
+                              src={item.mediaUrl}
+                              className="w-full h-full object-cover"
+                              muted
+                              onError={(e) => {
+                                console.error('Video load error:', e);
+                                const target = e.currentTarget;
+                                target.style.display = 'none';
+                              }}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/10 pointer-events-none">
+                              <Play className="w-4 h-4 text-white" />
+                            </div>
+                          </>
+                        )}
                       </>
                     ) : (
                       <img
