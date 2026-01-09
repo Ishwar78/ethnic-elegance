@@ -12,6 +12,7 @@ router.post('/', authMiddleware, async (req, res) => {
       totalAmount,
       shippingAddress,
       paymentMethod,
+      paymentDetails,
       notes
     } = req.body;
 
@@ -50,6 +51,7 @@ router.post('/', authMiddleware, async (req, res) => {
         phone: shippingAddress?.phone || ''
       },
       paymentMethod,
+      paymentDetails: paymentDetails || undefined,
       notes,
       status: 'confirmed'
     });
