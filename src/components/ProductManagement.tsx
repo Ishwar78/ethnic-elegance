@@ -237,6 +237,7 @@ export default function ProductManagement() {
         originalPrice: parseFloat(formData.originalPrice),
         category: formData.category,
         image: formData.image,
+        images: formData.images.length > 0 ? formData.images : [formData.image],
         sizes,
         colors,
         description: formData.description || formData.name,
