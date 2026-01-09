@@ -218,6 +218,7 @@ app.use('/api/categories', categoriesRoutes);
 app.use('/api/tickets', ticketsRoutes);
 app.use('/api/coupons', couponsRoutes);
 app.use('/api/size-charts', sizeChartsRoutes);
+app.use('/api/orders', ordersRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
