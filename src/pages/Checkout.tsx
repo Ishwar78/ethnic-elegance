@@ -106,6 +106,13 @@ export default function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validate COD transaction ID if COD is selected
+    if (paymentMethod === "cod" && !codTransactionId.trim()) {
+      toast.error("Please enter transaction ID for COD payment");
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
@@ -130,12 +137,14 @@ export default function Checkout() {
         total,
         totalAmount: total,
         shippingAddress,
+        paymentDetails: paymentMethod === "cod" ? { transactionId: codTransactionId } : undefined,
       }, paymentMethod);
 
       setOrderId(newOrderId);
       setIsProcessing(false);
       setOrderComplete(true);
       clearCart();
+      setCodTransactionId("");
       toast.success("Order placed successfully!");
     } catch (error) {
       console.error('Error placing order:', error);
