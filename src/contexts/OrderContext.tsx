@@ -35,7 +35,7 @@ export interface Order {
 
 interface OrderContextType {
   orders: Order[];
-  addOrder: (order: Omit<Order, "id" | "_id" | "createdAt" | "status">, paymentMethod: string) => Promise<string>;
+  addOrder: (order: Omit<Order, "id" | "_id" | "createdAt" | "status">, paymentMethod: string, paymentDetails?: any) => Promise<string>;
   getOrder: (id: string) => Order | undefined;
   refreshOrders: () => Promise<void>;
   isLoading: boolean;
