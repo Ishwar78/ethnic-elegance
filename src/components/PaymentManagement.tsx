@@ -192,10 +192,10 @@ export default function PaymentManagement() {
       }
 
       // Validate payment codes if enabled
-      if (formData.codePaymentEnabled && paymentCodes.length === 0) {
+      if (formData.codePaymentEnabled && paymentCodes.filter((code) => code.isActive).length === 0) {
         toast({
           title: "Error",
-          description: "Add at least one payment code if code payments are enabled",
+          description: "Add at least one active payment code if code payments are enabled",
           variant: "destructive",
         });
         setIsSaving(false);
