@@ -71,9 +71,9 @@ export default function Auth() {
         if (result.success) {
           toast({
             title: "Welcome back!",
-            description: "You have successfully logged in.",
+            description: "Opening your dashboard...",
           });
-          navigate("/");
+          navigate("/dashboard");
         } else {
           toast({
             title: "Login failed",
