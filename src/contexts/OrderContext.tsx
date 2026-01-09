@@ -35,7 +35,7 @@ export interface Order {
 
 interface OrderContextType {
   orders: Order[];
-  addOrder: (order: Omit<Order, "id" | "_id" | "createdAt" | "status">, paymentMethod: string) => Promise<string>;
+  addOrder: (order: Omit<Order, "id" | "_id" | "createdAt" | "status">, paymentMethod: string, paymentDetails?: any) => Promise<string>;
   getOrder: (id: string) => Order | undefined;
   refreshOrders: () => Promise<void>;
   isLoading: boolean;
@@ -82,7 +82,8 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
   const addOrder = async (
     orderData: Omit<Order, "id" | "_id" | "createdAt" | "status">,
-    paymentMethod: string
+    paymentMethod: string,
+    paymentDetails?: any
   ): Promise<string> => {
     if (!token) {
       throw new Error('User not authenticated');
@@ -102,6 +103,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           phone: orderData.shippingAddress?.phone,
         },
         paymentMethod,
+        paymentDetails,
       };
 
       const response = await fetch(`${API_URL}/orders`, {

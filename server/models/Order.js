@@ -39,8 +39,19 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['credit_card', 'debit_card', 'upi', 'wallet'],
+    enum: ['credit_card', 'debit_card', 'upi', 'wallet', 'cod'],
     required: true
+  },
+  paymentDetails: {
+    transactionId: {
+      type: String,
+      default: null
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['pending', 'completed', 'failed'],
+      default: 'pending'
+    }
   },
   notes: String,
   createdAt: {

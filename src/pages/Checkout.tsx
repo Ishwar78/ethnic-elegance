@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ChevronRight, Truck, Shield, CreditCard, CheckCircle2, Loader2, X } from "lucide-react";
+import { ChevronRight, Truck, Shield, CreditCard, CheckCircle2, Loader2, X, DollarSign } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ export default function Checkout() {
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const [codTransactionId, setCodTransactionId] = useState("");
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
@@ -105,6 +106,13 @@ export default function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validate COD transaction ID if COD is selected
+    if (paymentMethod === "cod" && !codTransactionId.trim()) {
+      toast.error("Please enter transaction ID for COD payment");
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
@@ -129,12 +137,14 @@ export default function Checkout() {
         total,
         totalAmount: total,
         shippingAddress,
+        paymentDetails: paymentMethod === "cod" ? { transactionId: codTransactionId } : undefined,
       }, paymentMethod);
 
       setOrderId(newOrderId);
       setIsProcessing(false);
       setOrderComplete(true);
       clearCart();
+      setCodTransactionId("");
       toast.success("Order placed successfully!");
     } catch (error) {
       console.error('Error placing order:', error);
@@ -332,7 +342,12 @@ export default function Checkout() {
                 {/* Payment Method */}
                 <div className="bg-card border border-border rounded-xl p-6">
                   <h2 className="font-display text-xl font-semibold mb-6">Payment Method</h2>
-                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <RadioGroup value={paymentMethod} onValueChange={(value) => {
+                    setPaymentMethod(value);
+                    if (value !== "cod") {
+                      setCodTransactionId("");
+                    }
+                  }}>
                     <div className="space-y-3">
                       <label
                         htmlFor="card"
@@ -375,8 +390,48 @@ export default function Checkout() {
                           <p className="text-sm text-muted-foreground">All major banks supported</p>
                         </div>
                       </label>
+                      <label
+                        htmlFor="cod"
+                        className={`flex items-center gap-4 p-4 border rounded-lg cursor-pointer transition-colors ${
+                          paymentMethod === "cod" ? "border-primary bg-primary/5" : "border-border"
+                        }`}
+                      >
+                        <RadioGroupItem value="cod" id="cod" />
+                        <DollarSign className="h-5 w-5 text-muted-foreground" />
+                        <div className="flex-1">
+                          <span className="font-medium">Cash on Delivery (COD)</span>
+                          <p className="text-sm text-muted-foreground">Pay when you receive your order</p>
+                        </div>
+                      </label>
                     </div>
                   </RadioGroup>
+
+                  {/* COD Details */}
+                  {paymentMethod === "cod" && (
+                    <div className="mt-6 pt-6 border-t border-border space-y-4">
+                      <h3 className="font-semibold">Cash on Delivery Details</h3>
+                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                        <p className="text-sm text-foreground mb-3">
+                          After placing your order, scan the QR code or use the payment details provided to complete the payment.
+                        </p>
+                        <div className="space-y-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="transaction-id">Transaction ID / Payment Reference</Label>
+                            <Input
+                              id="transaction-id"
+                              placeholder="Enter transaction ID after payment (e.g., TXN123456789)"
+                              value={codTransactionId}
+                              onChange={(e) => setCodTransactionId(e.target.value)}
+                              className="font-mono text-sm"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              This helps us confirm your payment when the delivery partner arrives
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* UPI Details */}
                   {paymentMethod === "upi" && paymentSettings?.upiEnabled && (

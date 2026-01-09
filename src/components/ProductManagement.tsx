@@ -253,8 +253,10 @@ export default function ProductManagement() {
           body: JSON.stringify(payload),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-          throw new Error('Failed to create product');
+          throw new Error(data.error || 'Failed to create product');
         }
 
         toast({
@@ -271,8 +273,10 @@ export default function ProductManagement() {
           body: JSON.stringify(payload),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-          throw new Error('Failed to update product');
+          throw new Error(data.error || 'Failed to update product');
         }
 
         toast({
