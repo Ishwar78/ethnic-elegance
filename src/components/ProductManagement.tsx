@@ -68,8 +68,10 @@ export default function ProductManagement() {
     isWinter: false,
     description: "",
     image: "",
+    images: [] as string[],
   });
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories = ["all", "ethnic_wear", "western_wear"];
@@ -127,8 +129,10 @@ export default function ProductManagement() {
       isWinter: product.isWinter || false,
       description: "",
       image: product.image,
+      images: [],
     });
     setImagePreview(product.image);
+    setImagePreviews([]);
     setIsAddMode(false);
     setIsDialogOpen(true);
   };
@@ -149,8 +153,10 @@ export default function ProductManagement() {
       isWinter: false,
       description: "",
       image: "",
+      images: [],
     });
     setImagePreview("");
+    setImagePreviews([]);
     setIsAddMode(true);
     setIsDialogOpen(true);
   };
@@ -166,6 +172,42 @@ export default function ProductManagement() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleMultipleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const maxImages = 6;
+      const newImages: string[] = [];
+      let loadedCount = 0;
+
+      Array.from(files).slice(0, maxImages).forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          newImages.push(result);
+          loadedCount++;
+
+          if (loadedCount === Array.from(files).slice(0, maxImages).length) {
+            setImagePreviews([...imagePreviews, ...newImages].slice(0, maxImages));
+            setFormData({
+              ...formData,
+              images: [...imagePreviews, ...newImages].slice(0, maxImages),
+            });
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const updatedPreviews = imagePreviews.filter((_, i) => i !== index);
+    setImagePreviews(updatedPreviews);
+    setFormData({
+      ...formData,
+      images: updatedPreviews,
+    });
   };
 
   const handleSave = async () => {
@@ -195,6 +237,7 @@ export default function ProductManagement() {
         originalPrice: parseFloat(formData.originalPrice),
         category: formData.category,
         image: formData.image,
+        images: formData.images.length > 0 ? formData.images : [formData.image],
         sizes,
         colors,
         description: formData.description || formData.name,
@@ -518,6 +561,50 @@ export default function ProductManagement() {
                   <span className="text-sm font-medium text-muted-foreground">Click to upload image</span>
                 </button>
               )}
+            </div>
+            <div className="space-y-2">
+              <Label>Additional Images (up to 6 total)</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted border border-border group">
+                    <img
+                      src={preview}
+                      alt={`Product preview ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 bg-destructive text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                {imagePreviews.length < 6 && (
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById("multi-image-input")?.click()}
+                    className="w-full aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary/50 bg-muted/50 hover:bg-muted flex flex-col items-center justify-center gap-1 transition-colors"
+                  >
+                    <Upload className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-xs font-medium text-muted-foreground text-center">
+                      {imagePreviews.length === 0 ? "Add images" : `+${6 - imagePreviews.length}`}
+                    </span>
+                  </button>
+                )}
+              </div>
+              <input
+                id="multi-image-input"
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleMultipleImagesChange}
+                className="hidden"
+              />
+              <p className="text-xs text-muted-foreground">
+                You can upload up to 6 images. First image is used as main product image.
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

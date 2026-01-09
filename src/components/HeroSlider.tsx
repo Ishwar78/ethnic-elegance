@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getVideoSource } from "@/lib/videoUtils";
 import heroImage1 from "@/assets/hero-model-1.jpg";
 import heroImage2 from "@/assets/hero-model-2.jpg";
 import heroImage3 from "@/assets/hero-model-3.jpg";
@@ -118,8 +119,12 @@ export default function HeroSlider() {
       {/* Background Slides */}
       {slides.map((slide, index) => {
         const mediaUrl = slide.mediaUrl || slide.image;
-        const isVideo = slide.mediaType === 'video' || mediaUrl?.endsWith('.mp4');
-        const isGif = slide.mediaType === 'gif' || mediaUrl?.endsWith('.gif');
+        const isVideoType = slide.mediaType === 'video';
+        const isGifType = slide.mediaType === 'gif';
+        const videoSource = isVideoType && mediaUrl ? getVideoSource(mediaUrl) : null;
+        const isYouTube = videoSource?.type === 'youtube';
+        const isInstagram = videoSource?.type === 'instagram';
+        const isDirectVideo = videoSource?.type === 'direct';
 
         return (
           <div
@@ -133,10 +138,34 @@ export default function HeroSlider() {
           >
             {/* Diagonal Media Container */}
             <div className="absolute right-0 top-0 h-full w-full md:w-[65%] overflow-hidden">
-              {isVideo ? (
+              {isYouTube ? (
+                <>
+                  <iframe
+                    src={videoSource.src}
+                    className="absolute inset-0 w-full h-full object-cover transform origin-left md:skew-x-[-6deg] md:translate-x-12 scale-110"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                    frameBorder="0"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent md:skew-x-[-6deg] md:translate-x-12" />
+                </>
+              ) : isInstagram ? (
+                <>
+                  <div className="absolute inset-0 bg-background/50 flex items-center justify-center transform origin-left md:skew-x-[-6deg] md:translate-x-12">
+                    <iframe
+                      src={videoSource.src}
+                      className="w-full h-full max-w-md"
+                      style={{ maxHeight: '600px' }}
+                      allowFullScreen
+                      frameBorder="0"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent md:skew-x-[-6deg] md:translate-x-12" />
+                </>
+              ) : isDirectVideo ? (
                 <>
                   <video
-                    src={mediaUrl}
+                    src={videoSource.src}
                     autoPlay
                     muted
                     loop

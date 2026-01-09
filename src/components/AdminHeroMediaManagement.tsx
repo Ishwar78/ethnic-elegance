@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Edit2, Plus } from "lucide-react";
+import { Trash2, Edit2, Plus, Play } from "lucide-react";
+import { getVideoSource } from "@/lib/videoUtils";
 
 interface HeroMedia {
   _id: string;
@@ -264,7 +265,7 @@ export default function AdminHeroMediaManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="video">Video (MP4)</SelectItem>
+                    <SelectItem value="video">Video (YouTube/Instagram/MP4)</SelectItem>
                     <SelectItem value="gif">GIF</SelectItem>
                     <SelectItem value="image">Image (JPG/PNG)</SelectItem>
                   </SelectContent>
@@ -276,14 +277,17 @@ export default function AdminHeroMediaManagement() {
                 <Label htmlFor="mediaUrl" className="text-foreground">Media URL *</Label>
                 <Input
                   id="mediaUrl"
-                  placeholder="https://example.com/video.mp4 or image.jpg"
+                  placeholder="YouTube, Instagram, or direct video link"
                   value={formData.mediaUrl}
                   onChange={(e) => setFormData({ ...formData, mediaUrl: e.target.value })}
                   required
                 />
-                <p className="text-xs text-muted-foreground">
-                  Paste the full URL of your video, GIF, or image
-                </p>
+                <div className="text-xs text-muted-foreground space-y-1 mt-2 p-2 bg-muted rounded">
+                  <p className="font-semibold text-foreground">How to add videos:</p>
+                  <p>📺 <strong>YouTube:</strong> https://youtu.be/VIDEO_ID or https://www.youtube.com/watch?v=VIDEO_ID</p>
+                  <p>📸 <strong>Instagram:</strong> https://www.instagram.com/p/POST_ID/ or https://www.instagram.com/reel/REEL_ID/</p>
+                  <p>🎬 <strong>Direct Video:</strong> https://example.com/video.mp4</p>
+                </div>
               </div>
 
               {/* CTA Text */}
@@ -354,22 +358,36 @@ export default function AdminHeroMediaManagement() {
               <CardContent className="pt-6">
                 <div className="flex gap-4">
                   {/* Media Preview */}
-                  <div className="w-32 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center relative">
+                  <div className="w-32 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center relative group">
                     {item.mediaType === 'video' ? (
                       <>
-                        <video
-                          src={item.mediaUrl}
-                          className="w-full h-full object-cover"
-                          muted
-                          onError={(e) => {
-                            console.error('Video load error:', e);
-                            const target = e.currentTarget;
-                            target.style.display = 'none';
-                          }}
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/10 pointer-events-none">
-                          <span className="text-white text-xs font-medium">Video</span>
-                        </div>
+                        {item.mediaUrl.includes('youtube.com') || item.mediaUrl.includes('youtu.be') ? (
+                          <div className="w-full h-full bg-red-900/20 flex flex-col items-center justify-center gap-1">
+                            <Play className="w-6 h-6 text-red-500" />
+                            <span className="text-white text-xs font-medium">YouTube</span>
+                          </div>
+                        ) : item.mediaUrl.includes('instagram.com') ? (
+                          <div className="w-full h-full bg-pink-900/20 flex flex-col items-center justify-center gap-1">
+                            <Play className="w-6 h-6 text-pink-500" />
+                            <span className="text-white text-xs font-medium">Instagram</span>
+                          </div>
+                        ) : (
+                          <>
+                            <video
+                              src={item.mediaUrl}
+                              className="w-full h-full object-cover"
+                              muted
+                              onError={(e) => {
+                                console.error('Video load error:', e);
+                                const target = e.currentTarget;
+                                target.style.display = 'none';
+                              }}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/10 pointer-events-none">
+                              <Play className="w-4 h-4 text-white" />
+                            </div>
+                          </>
+                        )}
                       </>
                     ) : (
                       <img
