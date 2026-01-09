@@ -5,6 +5,7 @@ import MediaShowcase from "@/components/MediaShowcase";
 import CollectionsSection from "@/components/CollectionsSection";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import TrustBadges from "@/components/TrustBadges";
+import AvailableCoupons from "@/components/AvailableCoupons";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 const Index = () => {
