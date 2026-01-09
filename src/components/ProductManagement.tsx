@@ -68,8 +68,10 @@ export default function ProductManagement() {
     isWinter: false,
     description: "",
     image: "",
+    images: [] as string[],
   });
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories = ["all", "ethnic_wear", "western_wear"];
