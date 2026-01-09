@@ -107,33 +107,40 @@ export default function Checkout() {
     e.preventDefault();
     setIsProcessing(true);
 
-    const formData = new FormData(e.currentTarget);
-    const shippingAddress = {
-      firstName: formData.get("firstName") as string,
-      lastName: formData.get("lastName") as string,
-      address: formData.get("address") as string,
-      city: formData.get("city") as string,
-      state: formData.get("state") as string,
-      pincode: formData.get("pincode") as string,
-    };
+    try {
+      const formData = new FormData(e.currentTarget);
+      const shippingAddress = {
+        firstName: formData.get("firstName") as string,
+        lastName: formData.get("lastName") as string,
+        address: formData.get("address") as string,
+        city: formData.get("city") as string,
+        state: formData.get("state") as string,
+        pincode: formData.get("pincode") as string,
+      };
 
-    // Simulate order processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Simulate payment processing
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    // Save order to history
-    const newOrderId = addOrder({
-      items: [...items],
-      subtotal,
-      shipping: shippingCost,
-      total,
-      shippingAddress,
-    });
+      // Create order on backend
+      const newOrderId = await addOrder({
+        items: [...items],
+        subtotal,
+        shipping: shippingCost,
+        total,
+        totalAmount: total,
+        shippingAddress,
+      }, paymentMethod);
 
-    setOrderId(newOrderId);
-    setIsProcessing(false);
-    setOrderComplete(true);
-    clearCart();
-    toast.success("Order placed successfully!");
+      setOrderId(newOrderId);
+      setIsProcessing(false);
+      setOrderComplete(true);
+      clearCart();
+      toast.success("Order placed successfully!");
+    } catch (error) {
+      console.error('Error placing order:', error);
+      setIsProcessing(false);
+      toast.error(error instanceof Error ? error.message : "Failed to place order");
+    }
   };
 
   if (items.length === 0 && !orderComplete) {
