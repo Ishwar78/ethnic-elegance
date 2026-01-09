@@ -1,66 +1,141 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { CartItem } from "./CartContext";
+import { useAuth } from "./AuthContext";
 
 export interface Order {
-  id: string;
-  items: CartItem[];
-  subtotal: number;
-  shipping: number;
-  total: number;
-  status: "confirmed" | "processing" | "shipped" | "delivered";
+  _id?: string;
+  id?: string;
+  items: Array<{
+    name: string;
+    price: number;
+    quantity: number;
+    image: string;
+    size?: string;
+    color?: string;
+  }>;
+  subtotal?: number;
+  shipping?: number;
+  total?: number;
+  totalAmount?: number;
+  status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled";
   createdAt: string;
   shippingAddress?: {
-    firstName: string;
-    lastName: string;
-    address: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    street?: string;
+    address?: string;
     city: string;
     state: string;
-    pincode: string;
+    pincode?: string;
+    zipCode?: string;
+    country?: string;
+    phone?: string;
   };
 }
 
 interface OrderContextType {
   orders: Order[];
-  addOrder: (order: Omit<Order, "id" | "createdAt" | "status">) => string;
+  addOrder: (order: Omit<Order, "id" | "_id" | "createdAt" | "status">, paymentMethod: string) => Promise<string>;
   getOrder: (id: string) => Order | undefined;
+  refreshOrders: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
-
-const ORDERS_STORAGE_KEY = "vasstra-orders";
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export function OrderProvider({ children }: { children: ReactNode }) {
-  const [orders, setOrders] = useState<Order[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem(ORDERS_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
+  const { user, token } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Fetch orders from backend when user logs in
   useEffect(() => {
-    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
-  }, [orders]);
+    if (user && token) {
+      refreshOrders();
+    } else {
+      setOrders([]);
+    }
+  }, [user, token]);
 
-  const addOrder = (orderData: Omit<Order, "id" | "createdAt" | "status">) => {
-    const orderId = `VAS${Date.now().toString().slice(-8)}`;
-    const newOrder: Order = {
-      ...orderData,
-      id: orderId,
-      status: "confirmed",
-      createdAt: new Date().toISOString(),
-    };
+  const refreshOrders = async () => {
+    if (!token) return;
 
-    setOrders((prev) => [newOrder, ...prev]);
-    return orderId;
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_URL}/orders/my-orders`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data.orders || []);
+      }
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addOrder = async (
+    orderData: Omit<Order, "id" | "_id" | "createdAt" | "status">,
+    paymentMethod: string
+  ): Promise<string> => {
+    if (!token) {
+      throw new Error('User not authenticated');
+    }
+
+    try {
+      const payload = {
+        items: orderData.items,
+        totalAmount: orderData.totalAmount || orderData.total,
+        shippingAddress: {
+          name: `${orderData.shippingAddress?.firstName || ''} ${orderData.shippingAddress?.lastName || ''}`.trim(),
+          street: orderData.shippingAddress?.street || orderData.shippingAddress?.address,
+          city: orderData.shippingAddress?.city,
+          state: orderData.shippingAddress?.state,
+          zipCode: orderData.shippingAddress?.pincode || orderData.shippingAddress?.zipCode,
+          country: orderData.shippingAddress?.country || 'India',
+          phone: orderData.shippingAddress?.phone,
+        },
+        paymentMethod,
+      };
+
+      const response = await fetch(`${API_URL}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create order');
+      }
+
+      const data = await response.json();
+
+      // Refresh orders list
+      await refreshOrders();
+
+      return data.order._id || data.order.id;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw error;
+    }
   };
 
   const getOrder = (id: string) => {
-    return orders.find((order) => order.id === id);
+    return orders.find((order) => order._id === id || order.id === id);
   };
 
   return (
-    <OrderContext.Provider value={{ orders, addOrder, getOrder }}>
+    <OrderContext.Provider value={{ orders, addOrder, getOrder, refreshOrders, isLoading }}>
       {children}
     </OrderContext.Provider>
   );
