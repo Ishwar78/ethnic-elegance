@@ -155,6 +155,7 @@ export default function Checkout() {
       setOrderComplete(true);
       clearCart();
       setCodTransactionId("");
+      setUpiTransactionId("");
       toast.success("Order placed successfully!");
     } catch (error) {
       console.error('Error placing order:', error);
