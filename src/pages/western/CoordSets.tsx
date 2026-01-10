@@ -1,16 +1,55 @@
+import { useState, useEffect } from "react";
 import CollectionLayout from "@/components/CollectionLayout";
-import { products } from "@/data/products";
+import { Product } from "@/data/products";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function CoordSets() {
-  const coordProducts = products.filter(p => p.subcategory === "Co-ord Sets");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`${API_URL}/products?category=western_wear`);
+        const data = await response.json();
+        if (data.success) {
+          const filtered = data.products.filter((p: Product) => p.subcategory === "Co-ord Sets");
+          setProducts(filtered);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <CollectionLayout
+        title="Loading..."
+        metaTitle="Co-ord Sets"
+        metaDescription="Explore our co-ord sets collection"
+        products={[]}
+        filterCategories={[]}
+        heroBg="bg-gradient-to-b from-secondary/10 to-background"
+      />
+    );
+  }
 
   return (
     <CollectionLayout
       title="Co-ord Sets"
-      subtitle="Matching sets for a coordinated look"
-      metaTitle="Co-ord Sets | Vasstra - Western Fashion"
-      metaDescription="Shop stylish co-ord sets collection. Matching top and bottom sets for effortless style. Free shipping above ₹999."
-      products={coordProducts}
+      subtitle="Perfectly Matched"
+      tagline="Coordinated style for the modern woman"
+      metaTitle="Co-ord Sets | Vasstra"
+      metaDescription="Explore our co-ord sets collection"
+      products={products}
+      filterCategories={[]}
       heroBg="bg-gradient-to-b from-secondary/10 to-background"
     />
   );
