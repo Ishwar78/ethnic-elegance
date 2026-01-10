@@ -25,7 +25,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function UserDashboard() {
-  const { user, logout, updateProfile, token } = useAuth();
+  const { user, logout, updateProfile, token, isLoading: authLoading } = useAuth();
   const { orders } = useOrders();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -45,6 +45,7 @@ export default function UserDashboard() {
   });
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       navigate("/auth");
       return;
