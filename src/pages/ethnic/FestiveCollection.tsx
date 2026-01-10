@@ -1,16 +1,55 @@
+import { useState, useEffect } from "react";
 import CollectionLayout from "@/components/CollectionLayout";
-import { products } from "@/data/products";
+import { Product } from "@/data/products";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function FestiveCollection() {
-  const festiveProducts = products.filter(p => p.subcategory === "Festive Collection");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`${API_URL}/products?category=ethnic_wear`);
+        const data = await response.json();
+        if (data.success) {
+          const filtered = data.products.filter((p: Product) => p.subcategory === "Festive Collection");
+          setProducts(filtered);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <CollectionLayout
+        title="Loading..."
+        metaTitle="Festive Collection"
+        metaDescription="Explore our festive collection"
+        products={[]}
+        filterCategories={[]}
+        heroBg="bg-gradient-to-b from-gold/10 to-background"
+      />
+    );
+  }
 
   return (
     <CollectionLayout
       title="Festive Collection"
-      subtitle="Traditional wear for festivals and celebrations"
-      metaTitle="Festive Collection | Vasstra - Festival Wear"
-      metaDescription="Shop festive wear collection. Diwali, Eid, and wedding outfits. Premium ethnic designs. Free shipping above ₹999."
-      products={festiveProducts}
+      subtitle="Celebrate in Style"
+      tagline="Perfect for all celebrations and festivals"
+      metaTitle="Festive Collection | Vasstra"
+      metaDescription="Explore our festive collection"
+      products={products}
+      filterCategories={[]}
       heroBg="bg-gradient-to-b from-gold/10 to-background"
     />
   );
