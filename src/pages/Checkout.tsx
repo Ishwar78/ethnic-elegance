@@ -358,6 +358,9 @@ export default function Checkout() {
                     if (value !== "cod") {
                       setCodTransactionId("");
                     }
+                    if (value !== "upi") {
+                      setUpiTransactionId("");
+                    }
                   }}>
                     <div className="space-y-3">
                       <label
