@@ -108,9 +108,14 @@ export default function Checkout() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Validate COD transaction ID if COD is selected
+    // Validate transaction ID for COD and UPI
     if (paymentMethod === "cod" && !codTransactionId.trim()) {
       toast.error("Please enter transaction ID for COD payment");
+      return;
+    }
+
+    if (paymentMethod === "upi" && !upiTransactionId.trim()) {
+      toast.error("Please enter transaction ID for UPI payment");
       return;
     }
 
@@ -131,6 +136,10 @@ export default function Checkout() {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Create order on backend
+      const paymentDetails = paymentMethod === "cod" ? { transactionId: codTransactionId } :
+                            paymentMethod === "upi" ? { transactionId: upiTransactionId } :
+                            undefined;
+
       const newOrderId = await addOrder({
         items: [...items],
         subtotal,
@@ -138,7 +147,7 @@ export default function Checkout() {
         total,
         totalAmount: total,
         shippingAddress,
-        paymentDetails: paymentMethod === "cod" ? { transactionId: codTransactionId } : undefined,
+        paymentDetails,
       }, paymentMethod);
 
       setOrderId(newOrderId);
