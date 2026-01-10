@@ -51,7 +51,7 @@ interface AdminOrder {
 }
 
 export default function AdminDashboard() {
-  const { user, token } = useAuth();
+  const { user, token, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
@@ -68,10 +68,11 @@ export default function AdminDashboard() {
 
   // Check if user is admin
   useEffect(() => {
+    if (authLoading) return;
     if (!user || user.role !== 'admin') {
       navigate('/vastra/admin');
     }
-  }, [user, navigate]);
+  }, [user, navigate, authLoading]);
 
   // Fetch dashboard stats
   useEffect(() => {
