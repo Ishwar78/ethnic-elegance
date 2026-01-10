@@ -1,16 +1,55 @@
+import { useState, useEffect } from "react";
 import CollectionLayout from "@/components/CollectionLayout";
-import { products } from "@/data/products";
+import { Product } from "@/data/products";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function Dresses() {
-  const dressProducts = products.filter(p => p.subcategory === "Dresses");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`${API_URL}/products?category=western_wear`);
+        const data = await response.json();
+        if (data.success) {
+          const filtered = data.products.filter((p: Product) => p.subcategory === "Dresses");
+          setProducts(filtered);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <CollectionLayout
+        title="Loading..."
+        metaTitle="Dresses"
+        metaDescription="Explore our dresses collection"
+        products={[]}
+        filterCategories={[]}
+        heroBg="bg-gradient-to-b from-secondary/10 to-background"
+      />
+    );
+  }
 
   return (
     <CollectionLayout
       title="Dresses"
-      subtitle="Beautiful dresses for every occasion"
-      metaTitle="Dresses | Vasstra - Western Fashion"
-      metaDescription="Shop stunning dresses collection. Casual, party, and formal dresses. Free shipping above ₹999."
-      products={dressProducts}
+      subtitle="Elegant & Modern"
+      tagline="Timeless silhouettes for every occasion"
+      metaTitle="Dresses | Vasstra"
+      metaDescription="Explore our dresses collection"
+      products={products}
+      filterCategories={[]}
       heroBg="bg-gradient-to-b from-secondary/10 to-background"
     />
   );
