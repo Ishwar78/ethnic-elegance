@@ -1,16 +1,55 @@
+import { useState, useEffect } from "react";
 import CollectionLayout from "@/components/CollectionLayout";
-import { products } from "@/data/products";
+import { Product } from "@/data/products";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function TopsTees() {
-  const topsProducts = products.filter(p => p.subcategory === "Tops & Tees");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`${API_URL}/products?category=western_wear`);
+        const data = await response.json();
+        if (data.success) {
+          const filtered = data.products.filter((p: Product) => p.subcategory === "Tops & Tees");
+          setProducts(filtered);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <CollectionLayout
+        title="Loading..."
+        metaTitle="Tops & Tees"
+        metaDescription="Explore our tops and tees collection"
+        products={[]}
+        filterCategories={[]}
+        heroBg="bg-gradient-to-b from-secondary/10 to-background"
+      />
+    );
+  }
 
   return (
     <CollectionLayout
       title="Tops & Tees"
-      subtitle="Trendy tops and tees for everyday style"
-      metaTitle="Tops & Tees | Vasstra - Western Fashion"
-      metaDescription="Shop trendy tops and tees collection. Casual, formal, and party wear tops. Free shipping above ₹999."
-      products={topsProducts}
+      subtitle="Casual & Comfortable"
+      tagline="Everyday style essentials"
+      metaTitle="Tops & Tees | Vasstra"
+      metaDescription="Explore our tops and tees collection"
+      products={products}
+      filterCategories={[]}
       heroBg="bg-gradient-to-b from-secondary/10 to-background"
     />
   );
